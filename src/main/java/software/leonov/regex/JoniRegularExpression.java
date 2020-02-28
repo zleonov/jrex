@@ -4,6 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.nio.charset.StandardCharsets;
+
 import org.jcodings.specific.UTF8Encoding;
 import org.joni.Config;
 import org.joni.Matcher;
@@ -12,7 +14,6 @@ import org.joni.Regex;
 import org.joni.Syntax;
 import org.joni.WarnCallback;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.MoreObjects;
 
 import software.leonov.common.base.Str;
@@ -30,7 +31,7 @@ public final class JoniRegularExpression implements RegularExpression {
     private final int flags;
 
     private JoniRegularExpression(final String regex, final int flags) {
-        pattern = new Regex(regex.getBytes(), 0, regex.length(), flags, Config.ENC_CASE_FOLD_MIN, UTF8Encoding.INSTANCE, Syntax.Java, WarnCallback.DEFAULT);
+        pattern = new Regex(regex.getBytes(StandardCharsets.UTF_8), 0, regex.length(), flags, Config.ENC_CASE_FOLD_MIN, UTF8Encoding.INSTANCE, Syntax.Java, WarnCallback.DEFAULT);
         this.regex = regex;
         this.flags = flags;
     }
@@ -76,7 +77,9 @@ public final class JoniRegularExpression implements RegularExpression {
 
     @Override
     public StringMatcher<Matcher> matcher(final String input) {
-        final byte[] bytes = input.getBytes(Charsets.UTF_8);
+        checkNotNull(input, "input == null");
+        
+        final byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
         final int end = bytes.length;
 
         final Matcher matcher = pattern.matcher(bytes);

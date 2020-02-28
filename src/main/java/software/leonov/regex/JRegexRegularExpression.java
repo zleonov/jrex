@@ -64,6 +64,7 @@ public final class JRegexRegularExpression implements RegularExpression {
 
     @Override
     public StringMatcher<Matcher> matcher(final String input) {
+        checkNotNull(input, "input == null");
 
         final Matcher matcher = pattern.matcher(input);
 

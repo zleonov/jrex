@@ -82,7 +82,6 @@ public final class TCLRegularExpression implements RegularExpression {
 
     @Override
     public StringMatcher<ReMatcher> matcher(final String input) {
-        checkNotNull(input, "input == null");
         return matcher(input, NO_EXEC_FLAGS);
     }
 

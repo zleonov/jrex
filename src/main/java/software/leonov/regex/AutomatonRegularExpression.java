@@ -39,6 +39,7 @@ public final class AutomatonRegularExpression implements RegularExpression {
 
     @Override
     public StringMatcher<AutomatonMatcher> matcher(final String input) {
+        checkNotNull(input, "input == null");
 
         final RunAutomaton automaton = new RunAutomaton(pattern.toAutomaton());
 
