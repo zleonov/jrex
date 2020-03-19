@@ -2,6 +2,7 @@ package software.leonov.regex;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkPositionIndex;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.EnumSet;
@@ -15,7 +16,6 @@ import com.basistech.tclre.RegexException;
 import com.google.common.base.MoreObjects;
 
 import software.leonov.common.base.Str;
-import software.leonov.common.util.Unchecked;
 
 /**
  * An implementation of the {@code RegularExpression} interface using the
@@ -46,7 +46,7 @@ public final class TCLRegularExpression implements RegularExpression {
      * @throws RegexException if the expression's syntax is invalid
      * @return a new {@code TCLRegularExpression} instance
      */
-    public static TCLRegularExpression compile(final String regex) {
+    public static TCLRegularExpression compile(final String regex) throws RegexException {
         checkNotNull(regex, "regex == null");
         return compile(regex, PatternFlags.ADVANCED);
     }
@@ -70,14 +70,10 @@ public final class TCLRegularExpression implements RegularExpression {
      * @throws RegexException if the expression's syntax is invalid
      * @return a new {@code TCLRegularExpression} instance
      */
-    public static TCLRegularExpression compile(final String regex, final PatternFlags... flags) {
+    public static TCLRegularExpression compile(final String regex, final PatternFlags... flags) throws RegexException {
         checkNotNull(regex, "regex == null");
         checkNotNull(flags, "flags == null");
-        try {
-            return new TCLRegularExpression(regex, flags);
-        } catch (final RegexException e) {
-            throw Unchecked.unchecked(e);
-        }
+        return new TCLRegularExpression(regex, flags);
     }
 
     @Override
@@ -114,8 +110,7 @@ public final class TCLRegularExpression implements RegularExpression {
             public int start(final int index) {
                 checkState(match, "no match available");
                 checkArgument(index >= 0, "index < 0");
-                if (index > groupCount())
-                    throw new IndexOutOfBoundsException("index > groupCount()");
+                checkPositionIndex(index, groupCount(), "index > groupCount()");
                 return matcher.start(index);
             }
 
@@ -131,7 +126,7 @@ public final class TCLRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean matches() {
+            public boolean matchesImpl() {
                 match = matcher.matches();
                 return match;
             }
@@ -145,8 +140,7 @@ public final class TCLRegularExpression implements RegularExpression {
             public String group(final int index) {
                 checkState(match, "no match available");
                 checkArgument(index >= 0, "index < 0");
-                if (index > groupCount())
-                    throw new IndexOutOfBoundsException("index > groupCount()");
+                checkPositionIndex(index, groupCount(), "index > groupCount()");
                 return matcher.group(index);
             }
 
@@ -157,7 +151,7 @@ public final class TCLRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean find() {
+            public boolean findImpl() {
                 match = matcher.find();
                 return match;
             }
@@ -166,8 +160,7 @@ public final class TCLRegularExpression implements RegularExpression {
             public int end(final int index) {
                 checkState(match, "no match available");
                 checkArgument(index >= 0, "index < 0");
-                if (index > groupCount())
-                    throw new IndexOutOfBoundsException("index > groupCount()");
+                checkPositionIndex(index, groupCount(), "index > groupCount()");
                 return matcher.end(index);
             }
 
