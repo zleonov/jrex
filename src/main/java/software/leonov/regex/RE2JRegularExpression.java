@@ -2,6 +2,7 @@ package software.leonov.regex;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkPositionIndex;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.base.MoreObjects;
@@ -74,8 +75,7 @@ public final class RE2JRegularExpression implements RegularExpression {
             public int start(final int index) {
                 checkState(match, "no match available");
                 checkArgument(index >= 0, "index < 0");
-                if (index > groupCount())
-                    throw new IndexOutOfBoundsException("index > groupCount()");
+                checkPositionIndex(index, groupCount(), "index > groupCount()");
                 return matcher.start(index);
             }
 
@@ -91,7 +91,7 @@ public final class RE2JRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean matches() {
+            public boolean matchesImpl() {
                 match = matcher.matches();
                 return match;
             }
@@ -105,8 +105,7 @@ public final class RE2JRegularExpression implements RegularExpression {
             public String group(final int index) {
                 checkState(match, "no match available");
                 checkArgument(index >= 0, "index < 0");
-                if (index > groupCount())
-                    throw new IndexOutOfBoundsException("index > groupCount()");
+                checkPositionIndex(index, groupCount(), "index > groupCount()");
                 return matcher.group(index);
             }
 
@@ -117,7 +116,7 @@ public final class RE2JRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean find() {
+            public boolean findImpl() {
                 match = matcher.find();
                 return match;
             }
@@ -126,8 +125,7 @@ public final class RE2JRegularExpression implements RegularExpression {
             public int end(final int index) {
                 checkState(match, "no match available");
                 checkArgument(index >= 0, "index < 0");
-                if (index > groupCount())
-                    throw new IndexOutOfBoundsException("index > groupCount()");
+                checkPositionIndex(index, groupCount(), "index > groupCount()");
                 return matcher.end(index);
             }
 

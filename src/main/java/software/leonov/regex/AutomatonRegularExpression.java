@@ -11,7 +11,8 @@ import dk.brics.automaton.RunAutomaton;
 import software.leonov.common.base.Str;
 
 /**
- * An implementation of the {@code RegularExpression} interface using the <a href="http://www.brics.dk/automaton/" target="_blank">http://www.brics.dk/automaton</a> package.
+ * An implementation of the {@code RegularExpression} interface using the
+ * <a href="http://www.brics.dk/automaton/" target="_blank">http://www.brics.dk/automaton</a> package.
  * 
  * @author Zhenya Leonov
  */
@@ -45,7 +46,7 @@ public final class AutomatonRegularExpression implements RegularExpression {
 
         return new StringMatcher<AutomatonMatcher>() {
 
-            AutomatonMatcher matcher = automaton.newMatcher(input);
+            private AutomatonMatcher matcher = automaton.newMatcher(input);
 
             private boolean find = false;
 
@@ -74,7 +75,7 @@ public final class AutomatonRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean matches() {
+            public boolean matchesImpl() {
                 match = automaton.run(input);
                 return match;
             }
@@ -96,7 +97,7 @@ public final class AutomatonRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean find() {
+            public boolean findImpl() {
                 find = matcher.find();
                 return find;
             }

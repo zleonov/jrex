@@ -2,6 +2,7 @@ package software.leonov.regex;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkPositionIndex;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.nio.charset.StandardCharsets;
@@ -96,8 +97,7 @@ public final class JoniRegularExpression implements RegularExpression {
             public int start(final int index) {
                 checkState(match, "no match available");
                 checkArgument(index >= 0, "index < 0");
-                if (index > groupCount())
-                    throw new IndexOutOfBoundsException("index > groupCount()");
+                checkPositionIndex(index, groupCount(), "index > groupCount()");
                 return matcher.getEagerRegion().beg[index];
             }
 
@@ -113,7 +113,7 @@ public final class JoniRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean matches() {
+            public boolean matchesImpl() {
                 match = matcher.match(0, end, Option.DEFAULT) != -1;
                 return match;
             }
@@ -130,8 +130,7 @@ public final class JoniRegularExpression implements RegularExpression {
             public String group(final int index) {
                 checkState(match, "no match available");
                 checkArgument(index >= 0, "index < 0");
-                if (index > groupCount())
-                    throw new IndexOutOfBoundsException("index > groupCount()");
+                checkPositionIndex(index, groupCount(), "index > groupCount()");
                 try {
                     return input.substring(matcher.getEagerRegion().beg[index], matcher.getEagerRegion().end[index]);
                 } catch (final StringIndexOutOfBoundsException e) {
@@ -149,7 +148,7 @@ public final class JoniRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean find() {
+            public boolean findImpl() {
                 final int findIndex = matcher.search(start, end, Option.DEFAULT);
                 start = matcher.getEnd();
                 match = findIndex != -1;
@@ -160,8 +159,7 @@ public final class JoniRegularExpression implements RegularExpression {
             public int end(final int index) {
                 checkState(match, "no match available");
                 checkArgument(index >= 0, "index < 0");
-                if (index > groupCount())
-                    throw new IndexOutOfBoundsException("index > groupCount()");
+                checkPositionIndex(index, groupCount(), "index > groupCount()");
                 return matcher.getEagerRegion().end[index];
             }
 
