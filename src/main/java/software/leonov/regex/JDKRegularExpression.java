@@ -66,11 +66,12 @@ public final class JDKRegularExpression implements RegularExpression {
     }
 
     @Override
-    public StringMatcher<Matcher> matcher(final String input) {
+    public InterruptibleMatcher<Matcher> matcher(final String input) {
         checkNotNull(input, "input == null");
 
         final Matcher matcher = pattern.matcher(input);
-        return new StringMatcher<Matcher>() {
+
+        return new InterruptibleMatcher<>(new AbstractMatcher<Matcher>() {
 
             @Override
             protected String getInput() {
@@ -97,7 +98,7 @@ public final class JDKRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean matchesImpl() {
+            public boolean matches() {
                 match = matcher.matches();
                 return match;
             }
@@ -122,7 +123,7 @@ public final class JDKRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean findImpl() {
+            public boolean find() {
                 match = matcher.find();
                 return match;
             }
@@ -151,7 +152,7 @@ public final class JDKRegularExpression implements RegularExpression {
             public Matcher delegate() {
                 return matcher;
             }
-        };
+        });
     }
 
     @Override
