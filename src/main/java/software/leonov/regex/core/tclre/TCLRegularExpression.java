@@ -1,9 +1,6 @@
-package software.leonov.regex;
+package software.leonov.regex.core.tclre;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkPositionIndex;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.util.EnumSet;
 
@@ -16,6 +13,8 @@ import com.basistech.tclre.RegexException;
 import com.google.common.base.MoreObjects;
 
 import software.leonov.common.base.Str;
+import software.leonov.regex.core.InputMatcher;
+import software.leonov.regex.core.RegularExpression;
 
 /**
  * An implementation of the {@code RegularExpression} interface using the
@@ -77,7 +76,7 @@ public final class TCLRegularExpression implements RegularExpression {
     }
 
     @Override
-    public StringMatcher<ReMatcher> matcher(final String input) {
+    public InputMatcher<ReMatcher> matcher(final CharSequence input) {
         return matcher(input, NO_EXEC_FLAGS);
     }
 
@@ -93,30 +92,26 @@ public final class TCLRegularExpression implements RegularExpression {
      *              </ul>
      * @return a {@code StringMatcher} object that will match the given string against this regular-expression
      */
-    public StringMatcher<ReMatcher> matcher(final String input, final ExecFlags... flags) {
+    public InputMatcher<ReMatcher> matcher(final CharSequence input, final ExecFlags... flags) {
         checkNotNull(input, "input == null");
         checkNotNull(flags, "flags == null");
 
         final ReMatcher matcher = pattern.matcher(input, flags);
 
-        return new StringMatcher<ReMatcher>() {
+        return new InputMatcher<ReMatcher>() {
 
             @Override
-            protected String getInput() {
+            protected CharSequence getInput() {
                 return input;
             }
 
             @Override
-            public int start(final int index) {
-                checkState(match, "no match available");
-                checkArgument(index >= 0, "index < 0");
-                checkPositionIndex(index, groupCount(), "index > groupCount()");
+            public int startImpl(final int index) {
                 return matcher.start(index);
             }
 
             @Override
-            public int start() {
-                checkState(match, "no match available");
+            public int startImpl() {
                 return matcher.start();
             }
 
@@ -127,8 +122,7 @@ public final class TCLRegularExpression implements RegularExpression {
 
             @Override
             public boolean matchesImpl() {
-                match = matcher.matches();
-                return match;
+                return matcher.matches();
             }
 
             @Override
@@ -137,48 +131,43 @@ public final class TCLRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String group(final int index) {
-                checkState(match, "no match available");
-                checkArgument(index >= 0, "index < 0");
-                checkPositionIndex(index, groupCount(), "index > groupCount()");
+            public String groupImpl(final int index) {
                 return matcher.group(index);
             }
 
             @Override
-            public String group() {
-                checkState(match, "no match available");
+            public String groupImpl() {
                 return matcher.group();
             }
 
             @Override
             public boolean findImpl() {
-                match = matcher.find();
-                return match;
+                return matcher.find();
             }
 
             @Override
-            public int end(final int index) {
-                checkState(match, "no match available");
-                checkArgument(index >= 0, "index < 0");
-                checkPositionIndex(index, groupCount(), "index > groupCount()");
+            public int endImpl(final int index) {
                 return matcher.end(index);
             }
 
             @Override
-            public int end() {
-                checkState(match, "no match available");
+            public int endImpl() {
                 return matcher.end();
             }
 
             @Override
-            public void reset() {
-                super.reset();
+            public void resetImpl() {
                 matcher.reset();
             }
 
             @Override
             public ReMatcher delegate() {
                 return matcher;
+            }
+
+            @Override
+            public boolean lookingAtImpl() {
+                return matcher.lookingAt();
             }
         };
     }

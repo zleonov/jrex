@@ -1,9 +1,6 @@
-package software.leonov.regex;
+package software.leonov.regex.core.jregex;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkPositionIndex;
-import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.base.MoreObjects;
 
@@ -12,6 +9,8 @@ import jregex.Pattern;
 import jregex.PatternSyntaxException;
 import jregex.REFlags;
 import software.leonov.common.base.Str;
+import software.leonov.regex.core.InputMatcher;
+import software.leonov.regex.core.RegularExpression;
 
 /**
  * An implementation of the {@code RegularExpression} interface using the
@@ -64,29 +63,26 @@ public final class JRegexRegularExpression implements RegularExpression {
     }
 
     @Override
-    public StringMatcher<Matcher> matcher(final String input) {
+    public InputMatcher<Matcher> matcher(final CharSequence input) {
         checkNotNull(input, "input == null");
 
-        final Matcher matcher = pattern.matcher(input);
+        final String string = input.toString();
+        final Matcher matcher = pattern.matcher(string);
 
-        return new StringMatcher<Matcher>() {
+        return new InputMatcher<Matcher>() {
 
             @Override
-            protected String getInput() {
+            protected CharSequence getInput() {
                 return input;
             }
 
             @Override
-            public int start(final int index) {
-                checkState(match, "no match available");
-                checkArgument(index >= 0, "index < 0");
-                checkPositionIndex(index, groupCount(), "index > groupCount()");
+            public int startImpl(final int index) {
                 return matcher.start(index);
             }
 
             @Override
-            public int start() {
-                checkState(match, "no match available");
+            public int startImpl() {
                 return matcher.start();
             }
 
@@ -97,8 +93,7 @@ public final class JRegexRegularExpression implements RegularExpression {
 
             @Override
             public boolean matchesImpl() {
-                match = matcher.matches();
-                return match;
+                return matcher.matches();
             }
 
             @Override
@@ -110,47 +105,43 @@ public final class JRegexRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String group(final int index) {
-                checkState(match, "no match available");
-                checkArgument(index >= 0, "index < 0");
-                checkPositionIndex(index, groupCount(), "index > groupCount()");
+            public String groupImpl(final int index) {
                 return matcher.group(index);
             }
 
             @Override
-            public String group() {
+            public String groupImpl() {
                 return matcher.group(0);
             }
 
             @Override
             public boolean findImpl() {
-                match = matcher.find();
-                return match;
+                return matcher.find();
             }
 
             @Override
-            public int end(final int index) {
-                checkState(match, "no match available");
-                checkArgument(index >= 0, "index < 0");
-                checkPositionIndex(index, groupCount(), "index > groupCount()");
+            public int endImpl(final int index) {
                 return matcher.end(index);
             }
 
             @Override
-            public int end() {
-                checkState(match, "no match available");
+            public int endImpl() {
                 return matcher.end();
             }
 
             @Override
-            public void reset() {
-                super.reset();
+            public void resetImpl() {
                 matcher.setPosition(0);
             }
 
             @Override
             public Matcher delegate() {
                 return matcher;
+            }
+
+            @Override
+            public boolean lookingAtImpl() {
+                throw new UnsupportedOperationException();
             }
         };
     }

@@ -1,4 +1,4 @@
-package software.leonov.regex;
+package software.leonov.regex.core.brics.dk.automaton;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -9,6 +9,8 @@ import dk.brics.automaton.AutomatonMatcher;
 import dk.brics.automaton.RegExp;
 import dk.brics.automaton.RunAutomaton;
 import software.leonov.common.base.Str;
+import software.leonov.regex.core.RegularExpression;
+import software.leonov.regex.core.InputMatcher;
 
 /**
  * An implementation of the {@code RegularExpression} interface using the
@@ -28,40 +30,69 @@ public final class AutomatonRegularExpression implements RegularExpression {
         pattern = new RegExp(regex, flags);
     }
 
+    /**
+     * Compiles the given regular-expression.
+     * <p>
+     * Shorthand for {@link #compile(String, int) compile(regex, RegExp.ALL)}.
+     * 
+     * @param regex the expression to be compiled
+     * @throws IllegalArgumentException if the expression's syntax is invalid
+     * @return a new {@code AutomatonRegularExpression} instance
+     */
     public static AutomatonRegularExpression compile(final String regex) {
         checkNotNull(regex, "regex == null");
         return new AutomatonRegularExpression(regex, 0);
     }
 
+    /**
+     * Compiles the given regular-expression with the specified flags.
+     * 
+     * @param regex the expression to be compiled
+     * @param flags match flags, a bit mask that may include:
+     *              <ul style="list-style-type:none">
+     *              <li>{@link RegExp#ALL}</li>
+     *              <li>{@link RegExp#ANYSTRING}</li>
+     *              <li>{@link RegExp#AUTOMATON}</li>
+     *              <li>{@link RegExp#COMPLEMENT}</li>
+     *              <li>{@link RegExp#EMPTY}</li>
+     *              <li>{@link RegExp#INTERSECTION}</li>
+     *              <li>{@link RegExp#INTERVAL}</li>
+     *              <li>{@link RegExp#NONE}</li>
+     *              </ul>
+     * @param regex the expression to be compiled
+     * @throws IllegalArgumentException if the expression's syntax is invalid
+     * @return a new {@code AutomatonRegularExpression} instance
+     */
     public static AutomatonRegularExpression compile(final String regex, final int flags) {
         checkNotNull(regex, "regex == null");
         return new AutomatonRegularExpression(regex, flags);
     }
 
     @Override
-    public StringMatcher<AutomatonMatcher> matcher(final String input) {
+    public InputMatcher<AutomatonMatcher> matcher(final CharSequence input) {
         checkNotNull(input, "input == null");
 
         final RunAutomaton automaton = new RunAutomaton(pattern.toAutomaton());
 
-        return new StringMatcher<AutomatonMatcher>() {
+        return new InputMatcher<AutomatonMatcher>() {
 
             private AutomatonMatcher matcher = automaton.newMatcher(input);
 
+            private boolean match = false;
             private boolean find = false;
 
             @Override
-            protected String getInput() {
+            protected CharSequence getInput() {
                 return input;
             }
 
             @Override
-            public int start(final int index) {
+            public int startImpl(final int index) {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public int start() {
+            public int startImpl() {
                 checkState(match | find, "no match available");
                 if (match)
                     return 0;
@@ -76,7 +107,7 @@ public final class AutomatonRegularExpression implements RegularExpression {
 
             @Override
             public boolean matchesImpl() {
-                match = automaton.run(input);
+                match = automaton.run(input.toString());
                 return match;
             }
 
@@ -87,12 +118,12 @@ public final class AutomatonRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String group(final int index) {
+            public String groupImpl(final int index) {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public String group() {
+            public String groupImpl() {
                 return matcher.group();
             }
 
@@ -103,12 +134,12 @@ public final class AutomatonRegularExpression implements RegularExpression {
             }
 
             @Override
-            public int end(final int index) {
+            public int endImpl(final int index) {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public int end() {
+            public int endImpl() {
                 checkState(match | find, "no match available");
                 if (match)
                     return input.length();
@@ -117,14 +148,18 @@ public final class AutomatonRegularExpression implements RegularExpression {
             }
 
             @Override
-            public void reset() {
-                super.reset();
+            public void resetImpl() {
                 matcher = automaton.newMatcher(input);
             }
 
             @Override
             public AutomatonMatcher delegate() {
                 return matcher;
+            }
+
+            @Override
+            public boolean lookingAtImpl() {
+                throw new UnsupportedOperationException();
             }
         };
     }

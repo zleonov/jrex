@@ -1,9 +1,6 @@
-package software.leonov.regex;
+package software.leonov.regex.core;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkPositionIndex;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -66,28 +63,24 @@ public final class JDKRegularExpression implements RegularExpression {
     }
 
     @Override
-    public StringMatcher<Matcher> matcher(final String input) {
+    public InputMatcher<Matcher> matcher(final CharSequence input) {
         checkNotNull(input, "input == null");
 
         final Matcher matcher = pattern.matcher(input);
-        return new StringMatcher<Matcher>() {
+        return new InputMatcher<Matcher>() {
 
             @Override
-            protected String getInput() {
+            protected CharSequence getInput() {
                 return input;
             }
 
             @Override
-            public int start(final int index) {
-                checkState(match, "no match available");
-                checkArgument(index >= 0, "index < 0");
-                checkPositionIndex(index, groupCount(), "index > groupCount()");
+            public int startImpl(final int index) {
                 return matcher.start(index);
             }
 
             @Override
-            public int start() {
-                checkState(match, "no match available");
+            public int startImpl() {
                 return matcher.start();
             }
 
@@ -98,8 +91,7 @@ public final class JDKRegularExpression implements RegularExpression {
 
             @Override
             public boolean matchesImpl() {
-                match = matcher.matches();
-                return match;
+                return matcher.matches();
             }
 
             @Override
@@ -108,42 +100,37 @@ public final class JDKRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String group(final int index) {
-                checkState(match, "no match available");
-                checkArgument(index >= 0, "index < 0");
-                checkPositionIndex(index, groupCount(), "index > groupCount()");
+            public String groupImpl(final int index) {
                 return matcher.group(index);
             }
 
             @Override
-            public String group() {
-                checkState(match, "no match available");
+            public String groupImpl() {
                 return matcher.group();
             }
 
             @Override
-            public boolean findImpl() {
-                match = matcher.find();
-                return match;
+            public boolean lookingAtImpl() {
+                return matcher.lookingAt();
             }
 
             @Override
-            public int end(final int index) {
-                checkState(match, "no match available");
-                checkArgument(index >= 0, "index < 0");
-                checkPositionIndex(index, groupCount(), "index > groupCount()");
+            public boolean findImpl() {
+                return matcher.find();
+            }
+
+            @Override
+            public int endImpl(final int index) {
                 return matcher.end(index);
             }
 
             @Override
-            public int end() {
-                checkState(match, "no match available");
+            public int endImpl() {
                 return matcher.end();
             }
 
             @Override
-            public void reset() {
-                super.reset();
+            public void resetImpl() {
                 matcher.reset();
             }
 

@@ -1,9 +1,6 @@
-package software.leonov.regex;
+package software.leonov.regex.core.joni;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkPositionIndex;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.nio.charset.StandardCharsets;
 
@@ -18,6 +15,8 @@ import org.joni.WarnCallback;
 import com.google.common.base.MoreObjects;
 
 import software.leonov.common.base.Str;
+import software.leonov.regex.core.InputMatcher;
+import software.leonov.regex.core.RegularExpression;
 
 /**
  * An implementation of the {@code RegularExpression} interface using the
@@ -32,7 +31,7 @@ public final class JoniRegularExpression implements RegularExpression {
     private final int flags;
 
     private JoniRegularExpression(final String regex, final int flags) {
-        pattern = new Regex(regex.getBytes(StandardCharsets.UTF_8), 0, regex.length(), flags, Config.ENC_CASE_FOLD_MIN, UTF8Encoding.INSTANCE, Syntax.Java, WarnCallback.DEFAULT);
+        pattern = new Regex(regex.getBytes(StandardCharsets.UTF_8), 0, regex.length(), flags, Config.ENC_CASE_FOLD_DEFAULT, UTF8Encoding.INSTANCE, Syntax.Java, WarnCallback.DEFAULT);
         this.regex = regex;
         this.flags = flags;
     }
@@ -77,33 +76,29 @@ public final class JoniRegularExpression implements RegularExpression {
     }
 
     @Override
-    public StringMatcher<Matcher> matcher(final String input) {
+    public InputMatcher<Matcher> matcher(final CharSequence input) {
         checkNotNull(input, "input == null");
-        
-        final byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
+
+        final byte[] bytes = input.toString().getBytes(StandardCharsets.UTF_8);
         final int end = bytes.length;
 
         final Matcher matcher = pattern.matcher(bytes);
 
-        return new StringMatcher<Matcher>() {
-            int start = 0;
+        return new InputMatcher<Matcher>() {
+            private int start = 0;
 
             @Override
-            protected String getInput() {
+            protected CharSequence getInput() {
                 return input;
             }
 
             @Override
-            public int start(final int index) {
-                checkState(match, "no match available");
-                checkArgument(index >= 0, "index < 0");
-                checkPositionIndex(index, groupCount(), "index > groupCount()");
+            public int startImpl(final int index) {
                 return matcher.getEagerRegion().beg[index];
             }
 
             @Override
-            public int start() {
-                checkState(match, "no match available");
+            public int startImpl() {
                 return matcher.getBegin();
             }
 
@@ -114,8 +109,7 @@ public final class JoniRegularExpression implements RegularExpression {
 
             @Override
             public boolean matchesImpl() {
-                match = matcher.match(0, end, Option.DEFAULT) != -1;
-                return match;
+                return matcher.match(0, end, Option.DEFAULT) != -1;
             }
 
             @Override
@@ -127,21 +121,18 @@ public final class JoniRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String group(final int index) {
-                checkState(match, "no match available");
-                checkArgument(index >= 0, "index < 0");
-                checkPositionIndex(index, groupCount(), "index > groupCount()");
+            public String groupImpl(final int index) {
                 try {
-                    return input.substring(matcher.getEagerRegion().beg[index], matcher.getEagerRegion().end[index]);
+                    return input.subSequence(matcher.getEagerRegion().beg[index], matcher.getEagerRegion().end[index]).toString();
                 } catch (final StringIndexOutOfBoundsException e) {
                     return null;
                 }
             }
 
             @Override
-            public String group() {
+            public String groupImpl() {
                 try {
-                    return input.substring(matcher.getEagerRegion().beg[0], matcher.getEagerRegion().end[0]);
+                    return input.subSequence(matcher.getEagerRegion().beg[0], matcher.getEagerRegion().end[0]).toString();
                 } catch (final StringIndexOutOfBoundsException e) {
                     return null;
                 }
@@ -151,33 +142,32 @@ public final class JoniRegularExpression implements RegularExpression {
             public boolean findImpl() {
                 final int findIndex = matcher.search(start, end, Option.DEFAULT);
                 start = matcher.getEnd();
-                match = findIndex != -1;
-                return match;
+                return findIndex != -1;
             }
 
             @Override
-            public int end(final int index) {
-                checkState(match, "no match available");
-                checkArgument(index >= 0, "index < 0");
-                checkPositionIndex(index, groupCount(), "index > groupCount()");
+            public int endImpl(final int index) {
                 return matcher.getEagerRegion().end[index];
             }
 
             @Override
-            public int end() {
-                checkState(match, "no match available");
+            public int endImpl() {
                 return matcher.getEnd();
             }
 
             @Override
-            public void reset() {
-                super.reset();
+            public void resetImpl() {
                 start = 0;
             }
 
             @Override
             public Matcher delegate() {
                 return matcher;
+            }
+
+            @Override
+            public boolean lookingAtImpl() {
+                throw new UnsupportedOperationException();
             }
         };
     }
