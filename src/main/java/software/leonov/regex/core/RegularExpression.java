@@ -17,10 +17,10 @@ import java.util.regex.MatchResult;
 public interface RegularExpression {
 
     /**
-     * Returns a {@code StringMatcher} object that will match the given input against this regular-expression.
+     * Returns a {@code InputMatcher} object that will match the given input against this regular-expression.
      * 
      * @param input the input to match against this regular-expression
-     * @return a {@code StringMatcher} object that will match the given input against this regular-expression
+     * @return a {@code InputMatcher} object that will match the given input against this regular-expression
      */
     public InputMatcher<?> matcher(final CharSequence input);
 

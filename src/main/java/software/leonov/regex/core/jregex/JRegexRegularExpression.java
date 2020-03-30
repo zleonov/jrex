@@ -67,22 +67,23 @@ public final class JRegexRegularExpression implements RegularExpression {
         checkNotNull(input, "input == null");
 
         final String string = input.toString();
-        final Matcher matcher = pattern.matcher(string);
 
         return new InputMatcher<Matcher>() {
 
+            final Matcher matcher = pattern.matcher(string);
+            
             @Override
             protected CharSequence getInput() {
                 return input;
             }
 
             @Override
-            public int startImpl(final int index) {
+            public int _start(final int index) {
                 return matcher.start(index);
             }
 
             @Override
-            public int startImpl() {
+            public int _start() {
                 return matcher.start();
             }
 
@@ -92,7 +93,7 @@ public final class JRegexRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean matchesImpl() {
+            public boolean _matches() {
                 return matcher.matches();
             }
 
@@ -105,33 +106,34 @@ public final class JRegexRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String groupImpl(final int index) {
+            public String _group(final int index) {
                 return matcher.group(index);
             }
 
             @Override
-            public String groupImpl() {
+            public String _group() {
                 return matcher.group(0);
             }
 
             @Override
-            public boolean findImpl() {
+            public boolean _find() {
                 return matcher.find();
             }
 
             @Override
-            public int endImpl(final int index) {
+            public int _end(final int index) {
                 return matcher.end(index);
             }
 
             @Override
-            public int endImpl() {
+            public int _end() {
                 return matcher.end();
             }
 
             @Override
-            public void resetImpl() {
-                matcher.setPosition(0);
+            public void _reset() {
+                matcher.setPosition(0); 
+                // Matcher matcher = pattern.matcher(string);
             }
 
             @Override
@@ -140,7 +142,7 @@ public final class JRegexRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean lookingAtImpl() {
+            public boolean _lookingAt() {
                 throw new UnsupportedOperationException();
             }
         };

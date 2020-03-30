@@ -51,7 +51,7 @@ public final class JoniRegularExpression implements RegularExpression {
      * Compiles the given regular-expression with the specified flags.
      * 
      * @param regex the expression to be compiled
-     * @param flags match flags, a bit mask that may include:
+     * @param flags a bit mask of match flags that may include:
      *              <ul style="list-style-type:none">
      *              <li>{@link Option#CAPTURE_GROUP}</li>
      *              <li>{@link Option#DONT_CAPTURE_GROUP}</li>
@@ -82,9 +82,9 @@ public final class JoniRegularExpression implements RegularExpression {
         final byte[] bytes = input.toString().getBytes(StandardCharsets.UTF_8);
         final int end = bytes.length;
 
-        final Matcher matcher = pattern.matcher(bytes);
-
         return new InputMatcher<Matcher>() {
+            
+            private Matcher matcher = pattern.matcher(bytes);
             private int start = 0;
 
             @Override
@@ -93,12 +93,12 @@ public final class JoniRegularExpression implements RegularExpression {
             }
 
             @Override
-            public int startImpl(final int index) {
+            public int _start(final int index) {
                 return matcher.getEagerRegion().beg[index];
             }
 
             @Override
-            public int startImpl() {
+            public int _start() {
                 return matcher.getBegin();
             }
 
@@ -108,7 +108,7 @@ public final class JoniRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean matchesImpl() {
+            public boolean _matches() {
                 return matcher.match(0, end, Option.DEFAULT) != -1;
             }
 
@@ -121,7 +121,7 @@ public final class JoniRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String groupImpl(final int index) {
+            public String _group(final int index) {
                 try {
                     return input.subSequence(matcher.getEagerRegion().beg[index], matcher.getEagerRegion().end[index]).toString();
                 } catch (final StringIndexOutOfBoundsException e) {
@@ -130,7 +130,7 @@ public final class JoniRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String groupImpl() {
+            public String _group() {
                 try {
                     return input.subSequence(matcher.getEagerRegion().beg[0], matcher.getEagerRegion().end[0]).toString();
                 } catch (final StringIndexOutOfBoundsException e) {
@@ -139,25 +139,26 @@ public final class JoniRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean findImpl() {
+            public boolean _find() {
                 final int findIndex = matcher.search(start, end, Option.DEFAULT);
                 start = matcher.getEnd();
                 return findIndex != -1;
             }
 
             @Override
-            public int endImpl(final int index) {
+            public int _end(final int index) {
                 return matcher.getEagerRegion().end[index];
             }
 
             @Override
-            public int endImpl() {
+            public int _end() {
                 return matcher.getEnd();
             }
 
             @Override
-            public void resetImpl() {
+            public void _reset() {
                 start = 0;
+                matcher = pattern.matcher(bytes);
             }
 
             @Override
@@ -166,7 +167,7 @@ public final class JoniRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean lookingAtImpl() {
+            public boolean _lookingAt() {
                 throw new UnsupportedOperationException();
             }
         };

@@ -87,12 +87,12 @@ public final class AutomatonRegularExpression implements RegularExpression {
             }
 
             @Override
-            public int startImpl(final int index) {
+            public int _start(final int index) {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public int startImpl() {
+            public int _start() {
                 checkState(match | find, "no match available");
                 if (match)
                     return 0;
@@ -106,7 +106,7 @@ public final class AutomatonRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean matchesImpl() {
+            public boolean _matches() {
                 match = automaton.run(input.toString());
                 return match;
             }
@@ -118,28 +118,28 @@ public final class AutomatonRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String groupImpl(final int index) {
+            public String _group(final int index) {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public String groupImpl() {
+            public String _group() {
                 return matcher.group();
             }
 
             @Override
-            public boolean findImpl() {
+            public boolean _find() {
                 find = matcher.find();
                 return find;
             }
 
             @Override
-            public int endImpl(final int index) {
+            public int _end(final int index) {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public int endImpl() {
+            public int _end() {
                 checkState(match | find, "no match available");
                 if (match)
                     return input.length();
@@ -148,7 +148,9 @@ public final class AutomatonRegularExpression implements RegularExpression {
             }
 
             @Override
-            public void resetImpl() {
+            public void _reset() {
+                match = false;
+                find = false;
                 matcher = automaton.newMatcher(input);
             }
 
@@ -158,7 +160,7 @@ public final class AutomatonRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean lookingAtImpl() {
+            public boolean _lookingAt() {
                 throw new UnsupportedOperationException();
             }
         };

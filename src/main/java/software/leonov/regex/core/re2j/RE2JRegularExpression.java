@@ -41,7 +41,7 @@ public final class RE2JRegularExpression implements RegularExpression {
      * Compiles the given regular-expression with the specified flags.
      * 
      * @param regex the expression to be compiled
-     * @param flags match flags, a bit mask that may include:
+     * @param flags a bit mask of match flags that may include:
      *              <ul style="list-style-type:none">
      *              <li>{@link Pattern#CASE_INSENSITIVE com.google.re2j.Pattern.CASE_INSENSITIVE}</li>
      *              <li>{@link Pattern#DOTALL com.google.re2j.Pattern.DOTALL}</li>
@@ -71,12 +71,12 @@ public final class RE2JRegularExpression implements RegularExpression {
             }
 
             @Override
-            public int startImpl(final int index) {
+            public int _start(final int index) {
                 return matcher.start(index);
             }
 
             @Override
-            public int startImpl() {
+            public int _start() {
                 return matcher.start();
             }
 
@@ -86,7 +86,7 @@ public final class RE2JRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean matchesImpl() {
+            public boolean _matches() {
                 return matcher.matches();
             }
 
@@ -96,32 +96,32 @@ public final class RE2JRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String groupImpl(final int index) {
+            public String _group(final int index) {
                 return matcher.group(index);
             }
 
             @Override
-            public String groupImpl() {
+            public String _group() {
                 return matcher.group();
             }
 
             @Override
-            public boolean findImpl() {
+            public boolean _find() {
                 return matcher.find();
             }
 
             @Override
-            public int endImpl(final int index) {
+            public int _end(final int index) {
                 return matcher.end(index);
             }
 
             @Override
-            public int endImpl() {
+            public int _end() {
                 return matcher.end();
             }
 
             @Override
-            public void resetImpl() {
+            public void _reset() {
                 matcher.reset();
             }
 
@@ -131,7 +131,7 @@ public final class RE2JRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean lookingAtImpl() {
+            public boolean _lookingAt() {
                 return matcher.lookingAt();
             }
         };

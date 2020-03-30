@@ -2,7 +2,6 @@ package software.leonov.regex.core;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkPositionIndex;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.time.Duration;
@@ -14,8 +13,8 @@ import java.util.regex.MatchResult;
 /**
  * Performs match and replace operations by interpreting a regular-expression.
  * <p>
- * Extending classes are expected to wrap the <i>matching</i> functionality of the underlying regular-expression
- * implementation, throwing {@code UnsupportedOperationException}s if a certain functionality is not supported.
+ * Extending classes must implement all abstract methods by forwarding their calls to the underlying regular-expression
+ * facility, throwing {@code UnsupportedOperationException}s where appropriate.
  * <p>
  * Instances of this class can be obtained by calling the {@link RegularExpression#matcher(String)} method.
  * 
@@ -30,16 +29,20 @@ public abstract class InputMatcher<T> implements MatchResult {
     };
 
     // @formatter:off
-    protected abstract int endImpl();
-    protected abstract int endImpl(final int index);
-    protected abstract int startImpl();
-    protected abstract int startImpl(final int index);
-    protected abstract boolean findImpl();
-    protected abstract boolean lookingAtImpl();
-    protected abstract boolean matchesImpl();
-    protected abstract String groupImpl();
-    protected abstract String groupImpl(final int index);
-    protected abstract void resetImpl();
+    protected abstract int _end();
+    protected abstract int _end(final int index);
+    protected abstract int _start();
+    protected abstract int _start(final int index);
+    
+    protected abstract boolean _find();
+    protected abstract boolean _lookingAt();
+    protected abstract boolean _matches();
+    
+    protected abstract String _group();
+    protected abstract String _group(final int index);
+    
+    protected abstract void _reset();
+    
     protected abstract CharSequence getInput();
     // @formatter:on
 
@@ -66,43 +69,43 @@ public abstract class InputMatcher<T> implements MatchResult {
     @Override
     public final int end(final int index) {
         checkState(match, "no match available");
-        checkArgument(index >= 0, "index < 0");
-        checkPositionIndex(index, groupCount(), "index cannot be greater than the number of capturing groups");
-        return endImpl(index);
+        if (index < 0 || index > groupCount())
+            throw new IndexOutOfBoundsException("no group " + index);
+        return _end(index);
     }
 
     @Override
     public final int end() {
         checkState(match, "no match available");
-        return endImpl();
+        return _end();
     }
 
     @Override
     public final String group() {
         checkState(match, "no match available");
-        return groupImpl();
+        return _group();
     }
 
     @Override
     public final String group(final int index) {
         checkState(match, "no match available");
-        checkArgument(index >= 0, "index < 0");
-        checkPositionIndex(index, groupCount(), "index cannot be greater than the number of capturing groups");
-        return groupImpl(index);
+        if (index < 0 || index > groupCount())
+            throw new IndexOutOfBoundsException("no group " + index);
+        return _group(index);
     }
 
     @Override
     public final int start() {
         checkState(match, "no match available");
-        return startImpl();
+        return _start();
     }
 
     @Override
     public final int start(final int index) {
         checkState(match, "no match available");
-        checkArgument(index >= 0, "index < 0");
-        checkPositionIndex(index, groupCount(), "index cannot be greater than the number of capturing groups");
-        return startImpl(index);
+        if (index < 0 || index > groupCount())
+            throw new IndexOutOfBoundsException("no group " + index);
+        return _start(index);
     }
 
     /**
@@ -114,7 +117,7 @@ public abstract class InputMatcher<T> implements MatchResult {
      * @return {@code true} if, and only if, a subsequence of the input sequence is a match
      */
     public final boolean find() {
-        return match = findImpl();
+        return match = _find();
     }
 
     /**
@@ -145,7 +148,7 @@ public abstract class InputMatcher<T> implements MatchResult {
      * @return {@code true} if, and only if, the start of input sequence is a match
      */
     public final boolean lookingAt() {
-        return match = lookingAtImpl();
+        return match = _lookingAt();
     }
 
     /**
@@ -177,7 +180,7 @@ public abstract class InputMatcher<T> implements MatchResult {
      * @return {@code true} if, and only if, the entire input sequence matches
      */
     public final boolean matches() {
-        return match = matchesImpl();
+        return match = _matches();
     }
 
     /**
@@ -203,7 +206,7 @@ public abstract class InputMatcher<T> implements MatchResult {
     public final void reset() {
         match = false;
         lastAppendPosition = 0;
-        resetImpl();
+        _reset();
     }
 
     /**

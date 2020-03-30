@@ -81,16 +81,16 @@ public final class TCLRegularExpression implements RegularExpression {
     }
 
     /**
-     * Returns a {@code StringMatcher} object that will match the given string against this regular-expression.
+     * Returns a {@code InputMatcher} object that will match the given string against this regular-expression.
      * 
      * @param input the string to use as an input
-     * @param flags optional flags which control the runtime behavior of {@code StringMatcher} that may include:
+     * @param flags optional flags which control the runtime behavior of the {@code InputMatcher} that may include:
      *              <ul style="list-style-type:none">
      *              <li>{@link ExecFlags#LOOKING_AT LOOKING_AT}</li>
      *              <li>{@link ExecFlags#NOTBOL NOTBOL}</li>
      *              <li>{@link ExecFlags#NOTEOL NOTEOL}</li>
      *              </ul>
-     * @return a {@code StringMatcher} object that will match the given string against this regular-expression
+     * @return a {@code InputMatcher} object that will match the given string against this regular-expression
      */
     public InputMatcher<ReMatcher> matcher(final CharSequence input, final ExecFlags... flags) {
         checkNotNull(input, "input == null");
@@ -106,12 +106,12 @@ public final class TCLRegularExpression implements RegularExpression {
             }
 
             @Override
-            public int startImpl(final int index) {
+            public int _start(final int index) {
                 return matcher.start(index);
             }
 
             @Override
-            public int startImpl() {
+            public int _start() {
                 return matcher.start();
             }
 
@@ -121,7 +121,7 @@ public final class TCLRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean matchesImpl() {
+            public boolean _matches() {
                 return matcher.matches();
             }
 
@@ -131,32 +131,32 @@ public final class TCLRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String groupImpl(final int index) {
+            public String _group(final int index) {
                 return matcher.group(index);
             }
 
             @Override
-            public String groupImpl() {
+            public String _group() {
                 return matcher.group();
             }
 
             @Override
-            public boolean findImpl() {
+            public boolean _find() {
                 return matcher.find();
             }
 
             @Override
-            public int endImpl(final int index) {
+            public int _end(final int index) {
                 return matcher.end(index);
             }
 
             @Override
-            public int endImpl() {
+            public int _end() {
                 return matcher.end();
             }
 
             @Override
-            public void resetImpl() {
+            public void _reset() {
                 matcher.reset();
             }
 
@@ -166,7 +166,7 @@ public final class TCLRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean lookingAtImpl() {
+            public boolean _lookingAt() {
                 return matcher.lookingAt();
             }
         };
