@@ -22,7 +22,7 @@ public interface RegularExpression {
      * @param input the input to match against this regular-expression
      * @return a {@code InputMatcher} object that will match the given input against this regular-expression
      */
-    public InputMatcher<?> matcher(final CharSequence input);
+    public InputMatcher matcher(final CharSequence input);
 
     /**
      * Returns the expression from which this {@code RegularExpression} was compiled.

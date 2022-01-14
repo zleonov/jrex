@@ -19,8 +19,6 @@ package software.leonov.regex.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.regex.Matcher;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -54,7 +52,7 @@ class ReplaceTest {
         repl = "xxx";
 
         JDKRegularExpression p = JDKRegularExpression.compile(pattern);
-        InputMatcher<Matcher> m = p.matcher(target);
+        InputMatcher m = p.matcher(target);
 
         assertEquals("foobarxxxarfoofo1", m.replaceFirst(repl));
         assertEquals("foobarxxxarfooxxx", m.replaceAll(repl));
@@ -64,7 +62,7 @@ class ReplaceTest {
     public void testCaptureReplace() throws Throwable {
         String target, pattern, repl, s;
         JDKRegularExpression p = null;
-        InputMatcher<Matcher> m;
+        InputMatcher m;
 
         target = "[31]foo;bar[42];[99]xyz";
         pattern = "\\[([0-9]+)\\]([a-z]+)";

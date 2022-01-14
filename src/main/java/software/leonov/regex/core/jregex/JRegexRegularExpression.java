@@ -2,13 +2,10 @@ package software.leonov.regex.core.jregex;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.common.base.MoreObjects;
-
 import jregex.Matcher;
 import jregex.Pattern;
 import jregex.PatternSyntaxException;
 import jregex.REFlags;
-import software.leonov.common.base.Str;
 import software.leonov.regex.core.InputMatcher;
 import software.leonov.regex.core.RegularExpression;
 
@@ -63,27 +60,27 @@ public final class JRegexRegularExpression implements RegularExpression {
     }
 
     @Override
-    public InputMatcher<Matcher> matcher(final CharSequence input) {
+    public InputMatcher matcher(final CharSequence input) {
         checkNotNull(input, "input == null");
 
         final String string = input.toString();
 
-        return new InputMatcher<Matcher>() {
+        return new InputMatcher() {
 
-            final Matcher matcher = pattern.matcher(string);
-            
+            Matcher matcher = pattern.matcher(string);
+
             @Override
             protected CharSequence getInput() {
                 return input;
             }
 
             @Override
-            public int _start(final int index) {
+            public int startImpl(final int index) {
                 return matcher.start(index);
             }
 
             @Override
-            public int _start() {
+            public int startImpl() {
                 return matcher.start();
             }
 
@@ -93,7 +90,7 @@ public final class JRegexRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean _matches() {
+            public boolean matchesImpl() {
                 return matcher.matches();
             }
 
@@ -106,43 +103,38 @@ public final class JRegexRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String _group(final int index) {
+            public String groupImpl(final int index) {
                 return matcher.group(index);
             }
 
             @Override
-            public String _group() {
+            public String groupImpl() {
                 return matcher.group(0);
             }
 
             @Override
-            public boolean _find() {
+            public boolean findImpl() {
                 return matcher.find();
             }
 
             @Override
-            public int _end(final int index) {
+            public int endImpl(final int index) {
                 return matcher.end(index);
             }
 
             @Override
-            public int _end() {
+            public int endImpl() {
                 return matcher.end();
             }
 
             @Override
-            public void _reset() {
-                matcher.setPosition(0); 
-                // Matcher matcher = pattern.matcher(string);
+            public void resetImpl() {
+                // matcher.setPosition(0);
+                matcher = pattern.matcher(string);
             }
 
             @Override
-            public Matcher delegate() {
-                return matcher;
-            }
-
-            @Override
-            public boolean _lookingAt() {
+            public boolean lookingAtImpl() {
                 throw new UnsupportedOperationException();
             }
         };
@@ -164,7 +156,7 @@ public final class JRegexRegularExpression implements RegularExpression {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this).add("pattern()", Str.truncate(pattern(), 200, "...")).add("flags()", flags()).toString();
+        return this.getClass().getSimpleName() + "pattern: [" + pattern() + "] flags: [" + flags() + "]";
     }
 
 }

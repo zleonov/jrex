@@ -4,23 +4,28 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.time.Duration;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Supplier;
 import java.util.regex.MatchResult;
 
 /**
  * Performs match and replace operations by interpreting a regular-expression.
  * <p>
+ * <b>Warning: This class uses {@link Thread#stop()} to terminate match operations if they timeout or if this thread is
+ * interrupted. If calls {@link #find(long, TimeUnit)}, {@link #lookingAt(long, TimeUnit)} or
+ * {@link #matches(long, TimeUnit)} result in a {@link TimeoutException} or an {@link InterruptedException} this matcher
+ * will be {@link #reset()} to avoid its private objects being damaged or left in an inconsistent state.</b>
+ * <p>
  * Extending classes must implement all abstract methods by forwarding their calls to the underlying regular-expression
  * facility, throwing {@code UnsupportedOperationException}s where appropriate.
  * <p>
- * Instances of this class can be obtained by calling the {@link RegularExpression#matcher(String)} method.
+ * Instances of this class can be obtained by calling the {@link RegularExpression#matcher(CharSequence)} method.
  * 
  * @author Zhenya Leonov
  */
-public abstract class InputMatcher<T> implements MatchResult {
+public abstract class InputMatcher implements MatchResult {
 
     private boolean match = false;
     private int lastAppendPosition = 0;
@@ -28,23 +33,27 @@ public abstract class InputMatcher<T> implements MatchResult {
     protected InputMatcher() {
     };
 
-    // @formatter:off
-    protected abstract int _end();
-    protected abstract int _end(final int index);
-    protected abstract int _start();
-    protected abstract int _start(final int index);
-    
-    protected abstract boolean _find();
-    protected abstract boolean _lookingAt();
-    protected abstract boolean _matches();
-    
-    protected abstract String _group();
-    protected abstract String _group(final int index);
-    
-    protected abstract void _reset();
-    
+    protected abstract int endImpl();
+
+    protected abstract int endImpl(final int index);
+
+    protected abstract int startImpl();
+
+    protected abstract int startImpl(final int index);
+
+    protected abstract boolean findImpl();
+
+    protected abstract boolean lookingAtImpl();
+
+    protected abstract boolean matchesImpl();
+
+    protected abstract String groupImpl();
+
+    protected abstract String groupImpl(final int index);
+
+    protected abstract void resetImpl();
+
     protected abstract CharSequence getInput();
-    // @formatter:on
 
     @Override
     public abstract int groupCount();
@@ -56,34 +65,34 @@ public abstract class InputMatcher<T> implements MatchResult {
      */
     public abstract RegularExpression pattern();
 
-    /**
-     * Returns the underlying <i>matcher</i> implementation.
-     * <p>
-     * The intention is to provide the ability to use any functionality of the underlying regular-expression library which
-     * is not supported by this interface.
-     * 
-     * @return the underlying <i>matcher</i> implementation
-     */
-    public abstract T delegate();
+//    /**
+//     * Returns the underlying <i>matcher</i> implementation.
+//     * <p>
+//     * The intention is to provide the ability to use any functionality of the underlying regular-expression library which
+//     * is not supported by this interface.
+//     * 
+//     * @return the underlying <i>matcher</i> implementation
+//     */
+//    public abstract T delegate();
 
     @Override
     public final int end(final int index) {
         checkState(match, "no match available");
         if (index < 0 || index > groupCount())
             throw new IndexOutOfBoundsException("no group " + index);
-        return _end(index);
+        return endImpl(index);
     }
 
     @Override
     public final int end() {
         checkState(match, "no match available");
-        return _end();
+        return endImpl();
     }
 
     @Override
     public final String group() {
         checkState(match, "no match available");
-        return _group();
+        return groupImpl();
     }
 
     @Override
@@ -91,13 +100,13 @@ public abstract class InputMatcher<T> implements MatchResult {
         checkState(match, "no match available");
         if (index < 0 || index > groupCount())
             throw new IndexOutOfBoundsException("no group " + index);
-        return _group(index);
+        return groupImpl(index);
     }
 
     @Override
     public final int start() {
         checkState(match, "no match available");
-        return _start();
+        return startImpl();
     }
 
     @Override
@@ -105,99 +114,97 @@ public abstract class InputMatcher<T> implements MatchResult {
         checkState(match, "no match available");
         if (index < 0 || index > groupCount())
             throw new IndexOutOfBoundsException("no group " + index);
-        return _start(index);
+        return startImpl(index);
     }
 
     /**
-     * Attempts to find the next subsequence of the input sequence that matches the regular-expression.
+     * Attempts to find the next matching subsequence of the input sequence.
      * <p>
      * <b>Note:</b> Like {@link java.util.regex.Matcher#find()} this method will never timeout and cannot be interrupted.
-     * Consider {@link #find(Duration)} if interruptibility is preferred.
+     * Consider {@link #find(long, TimeUnit)} if interruptibility is preferred.
      * 
      * @return {@code true} if, and only if, a subsequence of the input sequence is a match
      */
     public final boolean find() {
-        return match = _find();
+        return match = findImpl();
     }
 
     /**
-     * Spends at most {@code duration} time attempting to find the next subsequence of the input sequence that matches the
-     * regular-expression. If the specified duration is exceeded this method will throw a {@code TimeoutException}, and this
-     * matcher will be {@link #reset()}.
+     * Spends at most the specified amount of time attempting to find the next matching subsequence of the input sequence.
+     * If the specified {@code timeout} is exceeded this method will throw a {@code TimeoutException}, and this matcher will
+     * be {@link #reset()}.
      * 
-     * @param duration the time to wait for the operation to complete before abandoning it, a value of {@link Duration#ZERO}
-     *                 indicates to wait forever
+     * @param timeout the maximum time to wait
+     * @param unit    the time unit of the timeout argument
      * @return {@code true} if, and only if, a subsequence of the input sequence is a match
      * @throws TimeoutException     if the time out has been exceeded while attempting to find the next match
      * @throws InterruptedException if current thread is interrupted (the interrupted status of the current thread is
      *                              cleared when this exception is thrown)
-     * @throws ExecutionException   if any other errors occurs
      */
-    public final boolean find(final Duration duration) throws TimeoutException, InterruptedException, ExecutionException {
-        return resultOf(find, duration);
+    public final boolean find(final long timeout, final TimeUnit unit) throws TimeoutException, InterruptedException {
+        return resultOf(find, timeout, unit);
     }
 
     /**
-     * Attempts to match the beginning of input sequence against the regular-expression.
+     * Attempts to match the beginning of input sequence.
      * <p>
      * Unlike the {@link #matches()} method this method does not require that the entire input sequence be matched.
      * <p>
      * <b>Note:</b> Like {@link java.util.regex.Matcher#lookingAt()} this method will never timeout and cannot be
-     * interrupted. Consider {@link #lookingAt(Duration)} if interruptibility is preferred.
+     * interrupted. Consider {@link #lookingAt(long, TimeUnit)} if interruptibility is preferred.
      * 
      * @return {@code true} if, and only if, the start of input sequence is a match
      */
     public final boolean lookingAt() {
-        return match = _lookingAt();
+        return match = lookingAtImpl();
     }
 
     /**
-     * Spends at most {@code duration} time attempting to match the beginning of input sequence against the
-     * regular-expression. If the specified duration is exceeded this method will throw a {@code TimeoutException}, and this
-     * matcher will be {@link #reset()}.
+     * Spends at most the specified amount of time attempting to match the beginning of input sequence. If the specified
+     * {@code timeout} is exceeded this method will throw a {@code TimeoutException}, and this matcher will be
+     * {@link #reset()}.
      * <p>
-     * Unlike the {@link #matches(Duration)} method this method does not require that the entire input sequence be matched.
+     * Unlike the {@link #matches(long, TimeUnit)} method this method does not require that the entire input sequence be
+     * matched.
      * <p>
      * 
-     * @param duration the time to wait for the operation to complete before abandoning it, a value of {@link Duration#ZERO}
-     *                 indicates to wait forever
+     * @param timeout the maximum time to wait
+     * @param unit    the time unit of the timeout argument
      * @return {@code true} if, and only if, the start of input sequence is a match
      * @throws TimeoutException     if the time out has been exceeded while attempting to find the next match
      * @throws InterruptedException if current thread is interrupted (the interrupted status of the current thread is
      *                              cleared when this exception is thrown)
-     * @throws ExecutionException   if any other errors occurs
      */
-    public final boolean lookingAt(final Duration duration) throws TimeoutException, InterruptedException, ExecutionException {
-        return resultOf(lookingAt, duration);
+    public final boolean lookingAt(final long timeout, final TimeUnit unit) throws TimeoutException, InterruptedException {
+        return resultOf(lookingAt, timeout, unit);
     }
 
     /**
-     * Attempts to match the entire input sequence against the regular-expression.
+     * Attempts to match the entire input sequence.
      * <p>
      * <b>Note:</b> Like {@link java.util.regex.Matcher#matches()} this method will never timeout and cannot be interrupted.
-     * Consider {@link #matches(Duration)} if interruptibility is preferred.
+     * Consider {@link #matches(long, TimeUnit)} if interruptibility is preferred.
      * 
      * @return {@code true} if, and only if, the entire input sequence matches
      */
     public final boolean matches() {
-        return match = _matches();
+        return match = matchesImpl();
     }
 
     /**
-     * Spends at most {@code duration} time attempting to match the entire input sequence against the regular-expression. If
-     * the specified duration is exceeded this method will throw a {@code TimeoutException}, and this matcher will be
+     * Spends at most the specified amount of time attempting to match the entire input sequence. If the specified
+     * {@code timeout} is exceeded this method will throw a {@code TimeoutException}, and this matcher will be
      * {@link #reset()}.
      * 
-     * @param duration the time to wait for the operation to complete before abandoning it, a value of {@link Duration#ZERO}
-     *                 indicates to wait forever
+     * @param timeout the maximum time to wait
+     * @param unit    the time unit of the timeout argument
      * @return {@code true} if, and only if, the entire input sequence matches
      * @throws InterruptedException if current thread is interrupted (the interrupted status of the current thread is
      *                              cleared when this exception is thrown)
      * @throws TimeoutException     if the time out has been exceeded while attempting to find the next match
-     * @throws ExecutionException   if any other errors occurs
      */
-    public final boolean matches(final Duration duration) throws TimeoutException, InterruptedException, ExecutionException {
-        return resultOf(matches, duration);
+    public final boolean matches(final long timeout, final TimeUnit unit) throws TimeoutException, InterruptedException {
+        return resultOf(matches, timeout, unit);
     }
 
     /**
@@ -206,7 +213,7 @@ public abstract class InputMatcher<T> implements MatchResult {
     public final void reset() {
         match = false;
         lastAppendPosition = 0;
-        _reset();
+        resetImpl();
     }
 
     /**
@@ -239,7 +246,7 @@ public abstract class InputMatcher<T> implements MatchResult {
      * @param replacement the replacement string
      * @return this {@code InputMatcher} object
      */
-    public final InputMatcher<T> appendReplacement(final StringBuilder buff, final String replacement) {
+    public final InputMatcher appendReplacement(final StringBuilder buff, final String replacement) {
         checkNotNull(buff, "buff == null");
         checkNotNull(replacement, "replacement == null");
         checkArgument(match, "no match available");
@@ -309,14 +316,13 @@ public abstract class InputMatcher<T> implements MatchResult {
     }
 
     /**
-     * Replaces every subsequence of the input sequence that matches the regular expression with the given replacement
-     * string.
+     * Replaces every matching subsequence of the input sequence with a replacement string.
      * <p>
      * The replacement string may contain references to captured groups. Each occurrence {@code $} followed by an integer
      * will be replaced by the {@link #group(int)} result. Named capturing groups are not supported.
      * <p>
      * <b>Note:</b> Like {@link java.util.regex.Matcher#replaceAll(String)} this method will never timeout and cannot be
-     * interrupted. Consider {@link #replaceAll(String, Duration)} if interruptibility is preferred.
+     * interrupted. Consider {@link #replaceAll(String, long, TimeUnit)} if interruptibility is preferred.
      * 
      * @param replacement the replacement string
      * @return the string constructed by replacing each match with the replacement string
@@ -332,9 +338,8 @@ public abstract class InputMatcher<T> implements MatchResult {
     }
 
     /**
-     * Spends at most {@code duration} time attempting to replace every subsequence of the input sequence that matches the
-     * regular-expression with the given replacement string. If the specified duration is exceeded this method will throw a
-     * {@code TimeoutException}.
+     * Spends at most the specified amount of time replacing every matching subsequence of the input sequence a replacement
+     * string. If the {@code timeout} is exceeded this method will throw a {@code TimeoutException}.
      * <p>
      * The replacement string may contain references to captured groups. Each occurrence of {@code $} followed by an integer
      * will be replaced by the result of calling {@link #group(int)}. Named capturing groups are not supported.
@@ -342,27 +347,25 @@ public abstract class InputMatcher<T> implements MatchResult {
      * This method is modeled after {@link java.util.regex.Matcher#replaceAll(String) Matcher.replaceAll(String)}.
      * 
      * @param replacement the replacement string
-     * @param duration    the time to wait for the operation to complete before abandoning it, a value of
-     *                    {@link Duration#ZERO} indicates to wait forever
+     * @param timeout     the maximum time to wait
+     * @param unit        the time unit of the timeout argument
      * @return the string constructed by replacing each match with the replacement string
      * @throws TimeoutException     if the time out has been exceeded while attempting to find the next match
      * @throws InterruptedException if current thread is interrupted (the interrupted status of the current thread is
      *                              cleared when this exception is thrown)
-     * @throws ExecutionException   if any other errors occurs
      */
-    public final String replaceAll(final String replacement, final Duration duration) throws TimeoutException, InterruptedException, ExecutionException {
+    public final String replaceAll(final String replacement, final long timeout, final TimeUnit unit) throws TimeoutException, InterruptedException {
         checkNotNull(replacement, "replacement == null");
         reset();
         final StringBuilder sb = new StringBuilder();
-        while (find(duration))
+        while (find(timeout, unit))
             appendReplacement(sb, replacement);
         appendTail(sb);
         return sb.toString();
     }
 
     /**
-     * Replaces the first subsequence of the input sequence that matches the regular expression with the given replacement
-     * string.
+     * Replaces the first matching subsequence of the input sequence with a replacement string.
      * <p>
      * The replacement string may contain references to captured groups. Each occurrence {@code $} followed by an integer
      * will be replaced by the {@link #group(int)} result. Named capturing groups are not supported.
@@ -383,94 +386,65 @@ public abstract class InputMatcher<T> implements MatchResult {
     }
 
     /**
-     * Spends at most {@code duration} time attempting to replace the first subsequence of the input sequence that matches
-     * the regular-expression with the given replacement string. If the specified duration is exceeded this method will
-     * throw a {@code TimeoutException}.
+     * Spends at most the specified amount of time replacing the first matching subsequence of the input sequence with a
+     * replacement string. If the specified {@code timeout} is exceeded this method will throw a {@code TimeoutException}.
      * <p>
      * The replacement string may contain references to captured groups. Each occurrence of {@code $} followed by an integer
      * will be replaced by the result of calling {@link #group(int)}. Named capturing groups are not supported.
      * <p>
      * <b>Note:</b> Like {@link java.util.regex.Matcher#replaceFirst(String)} this method will never timeout and cannot be
-     * interrupted. Consider {@link #replaceFirst(String, Duration)} if interruptibility is preferred.
+     * interrupted. Consider {@link #replaceFirst(String, long, TimeUnit)} if interruptibility is preferred.
      * 
      * @param replacement the replacement string
-     * @param duration    the time to wait for the operation to complete before abandoning it, a value of
-     *                    {@link Duration#ZERO} indicates to wait forever
+     * @param timeout     the maximum time to wait
+     * @param unit        the time unit of the timeout argument
      * @return the string constructed by replacing the first match with the replacement string
      * @throws TimeoutException     if the time out has been exceeded while attempting to find the next match
      * @throws InterruptedException if current thread is interrupted (the interrupted status of the current thread is
      *                              cleared when this exception is thrown)
-     * @throws ExecutionException   if any other errors occurs
      */
-    public final String replaceFirst(final String replacement, final Duration duration) throws TimeoutException, InterruptedException, ExecutionException {
+    public final String replaceFirst(final String replacement, final long timeout, final TimeUnit unit) throws TimeoutException, InterruptedException {
         checkNotNull(replacement, "replacement == null");
         final StringBuilder sb = new StringBuilder();
         reset();
-        if (find(duration))
+        if (find(timeout, unit))
             appendReplacement(sb, replacement);
         appendTail(sb);
         return sb.toString();
     }
 
-    private final MatchOperation matches = new MatchOperation(() -> matches());
-    private final MatchOperation find = new MatchOperation(() -> find());
-    private final MatchOperation lookingAt = new MatchOperation(() -> lookingAt());
+    final private FutureTask<Boolean> matches = new FutureTask<>(() -> matches());
+    final private FutureTask<Boolean> find = new FutureTask<>(() -> find());
+    final private FutureTask<Boolean> lookingAt = new FutureTask<>(() -> lookingAt());
 
-    private final class MatchOperation implements Runnable {
+    @SuppressWarnings("deprecation")
+    private boolean resultOf(final FutureTask<Boolean> task, final long timeout, final TimeUnit unit) throws TimeoutException, InterruptedException {
+        checkArgument(timeout >= 0, "timeout < 0");
+        checkNotNull(unit, "unit == null");
 
-        private final Supplier<Boolean> supplier;
-        private boolean result = false;
-        private Throwable t = null;
+        final Thread t = new Thread(task);
+        t.start();
 
-        public MatchOperation(final Supplier<Boolean> supplier) {
-            this.supplier = supplier;
-        }
-
-        @Override
-        public void run() {
-            try {
-                result = supplier.get();
-            } catch (final Throwable x) {
-                t = x;
-            }
-        }
-
-        public boolean result() throws ExecutionException {
-            if (t != null)
-                throw new ExecutionException(t);
-            return result;
+        try {
+            return task.get(timeout, unit);
+        } catch (final InterruptedException | TimeoutException e) {
+            reset();
+            throw e;
+        } catch (final ExecutionException e) {
+            final Throwable cause = e.getCause();
+            throwIfUnchecked(cause);
+            throw new RuntimeException(cause);
+        } finally {
+            if (t.isAlive())
+                t.stop();
         }
     }
 
-    @SuppressWarnings("deprecation")
-    private boolean resultOf(final MatchOperation operation, final Duration duration) throws TimeoutException, InterruptedException, ExecutionException {
-        checkNotNull(duration, "duration == null");
-        checkArgument(!duration.isNegative(), "duration < 0");
-
-        final Thread t = new Thread(operation);
-        t.start();
-
-        InterruptedException x = null;
-
-        try {
-            t.join(duration.toMillis());
-        } catch (final InterruptedException e) {
-            x = e;
-        }
-
-        if (x != null || t.isAlive()) {
-
-            t.stop();
-
-            reset();
-
-            if (x != null)
-                throw x;
-            else
-                throw new TimeoutException("match operation exceeded " + duration);
-        }
-
-        return operation.result();
+    private static void throwIfUnchecked(final Throwable t) {
+        if (t instanceof RuntimeException)
+            throw (RuntimeException) t;
+        else if (t instanceof Error)
+            throw (Error) t;
     }
 
 }

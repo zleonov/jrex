@@ -3,14 +3,11 @@ package software.leonov.regex.core.brics.dk.automaton;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.common.base.MoreObjects;
-
 import dk.brics.automaton.AutomatonMatcher;
 import dk.brics.automaton.RegExp;
 import dk.brics.automaton.RunAutomaton;
-import software.leonov.common.base.Str;
-import software.leonov.regex.core.RegularExpression;
 import software.leonov.regex.core.InputMatcher;
+import software.leonov.regex.core.RegularExpression;
 
 /**
  * An implementation of the {@code RegularExpression} interface using the
@@ -59,7 +56,6 @@ public final class AutomatonRegularExpression implements RegularExpression {
      *              <li>{@link RegExp#INTERVAL}</li>
      *              <li>{@link RegExp#NONE}</li>
      *              </ul>
-     * @param regex the expression to be compiled
      * @throws IllegalArgumentException if the expression's syntax is invalid
      * @return a new {@code AutomatonRegularExpression} instance
      */
@@ -69,12 +65,12 @@ public final class AutomatonRegularExpression implements RegularExpression {
     }
 
     @Override
-    public InputMatcher<AutomatonMatcher> matcher(final CharSequence input) {
+    public InputMatcher matcher(final CharSequence input) {
         checkNotNull(input, "input == null");
 
         final RunAutomaton automaton = new RunAutomaton(pattern.toAutomaton());
 
-        return new InputMatcher<AutomatonMatcher>() {
+        return new InputMatcher() {
 
             private AutomatonMatcher matcher = automaton.newMatcher(input);
 
@@ -87,12 +83,12 @@ public final class AutomatonRegularExpression implements RegularExpression {
             }
 
             @Override
-            public int _start(final int index) {
+            public int startImpl(final int index) {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public int _start() {
+            public int startImpl() {
                 checkState(match | find, "no match available");
                 if (match)
                     return 0;
@@ -106,7 +102,7 @@ public final class AutomatonRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean _matches() {
+            public boolean matchesImpl() {
                 match = automaton.run(input.toString());
                 return match;
             }
@@ -118,28 +114,28 @@ public final class AutomatonRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String _group(final int index) {
+            public String groupImpl(final int index) {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public String _group() {
+            public String groupImpl() {
                 return matcher.group();
             }
 
             @Override
-            public boolean _find() {
+            public boolean findImpl() {
                 find = matcher.find();
                 return find;
             }
 
             @Override
-            public int _end(final int index) {
+            public int endImpl(final int index) {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public int _end() {
+            public int endImpl() {
                 checkState(match | find, "no match available");
                 if (match)
                     return input.length();
@@ -148,19 +144,14 @@ public final class AutomatonRegularExpression implements RegularExpression {
             }
 
             @Override
-            public void _reset() {
+            public void resetImpl() {
                 match = false;
                 find = false;
                 matcher = automaton.newMatcher(input);
             }
 
             @Override
-            public AutomatonMatcher delegate() {
-                return matcher;
-            }
-
-            @Override
-            public boolean _lookingAt() {
+            public boolean lookingAtImpl() {
                 throw new UnsupportedOperationException();
             }
         };
@@ -182,7 +173,7 @@ public final class AutomatonRegularExpression implements RegularExpression {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this).add("pattern()", Str.truncate(pattern(), 200, "...")).add("flags()", flags()).toString();
+        return this.getClass().getSimpleName() + "pattern: [" + pattern() + "] flags: [" + flags() + "]";
     }
 
 }

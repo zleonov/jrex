@@ -17,12 +17,7 @@
  */
 package software.leonov.regex.core;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,9 +53,17 @@ class LookingAtTest {
         Pattern p = Pattern.compile(regex);
         Matcher m = p.matcher(input);
         
-        System.out.println(m.lookingAt() + ":" + m.start() + ":" + m.end());
-        System.out.println(m.find() + ":" + m.start() + ":" + m.end());
-        System.out.println(m.lookingAt() + ":" + m.start() + ":" + m.end());
+        assertTrue(m.lookingAt());
+        assertEquals(0, m.start());
+        assertEquals(2, m.end());
+        
+        assertTrue(m.find());
+        assertEquals(4, m.start());
+        assertEquals(6, m.end());
+        
+        assertTrue(m.lookingAt());
+        assertEquals(0, m.start());
+        assertEquals(2, m.end());
 
     }
 }

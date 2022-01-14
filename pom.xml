@@ -1,6 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>software.leonov</groupId>
@@ -21,19 +19,14 @@
         <guava.src.path></guava.src.path>
     </properties>
 
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
     <dependencies>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>26.0-jre</version>
-        </dependency>
-
-        <dependency>
-            <groupId>software.leonov.common</groupId>
-            <artifactId>jpal</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-
         <dependency>
             <groupId>dk.brics.automaton</groupId>
             <artifactId>automaton</artifactId>
@@ -69,6 +62,12 @@
             <optional>true</optional>
         </dependency>
 
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.1.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -96,7 +95,7 @@
                 <version>${maven-javadoc-plugin.version}</version>
 
                 <configuration>
-                    <sourcepath>${project.build.sourceDirectory}:${java.src.path}:${guava.src.path}</sourcepath>
+                    <sourcepath>${project.build.sourceDirectory}:${java.src}</sourcepath>
                     <subpackages>software.leonov</subpackages>
                     <quiet>false</quiet>
                     <notimestamp>true</notimestamp>
@@ -104,7 +103,7 @@
                     <docencoding>UTF-8</docencoding>
                     <charset>UTF-8</charset>
                     <show>public</show>
-                    <doclint>-html</doclint>
+                    <doclint>none</doclint>
                     <linksource>true</linksource>
                     <doctitle>
                         <![CDATA[
@@ -136,15 +135,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>2.9</version>
-            </plugin>
-        </plugins>
-    </reporting>
 
 </project>

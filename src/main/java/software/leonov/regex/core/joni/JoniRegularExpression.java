@@ -12,9 +12,6 @@ import org.joni.Regex;
 import org.joni.Syntax;
 import org.joni.WarnCallback;
 
-import com.google.common.base.MoreObjects;
-
-import software.leonov.common.base.Str;
 import software.leonov.regex.core.InputMatcher;
 import software.leonov.regex.core.RegularExpression;
 
@@ -76,13 +73,13 @@ public final class JoniRegularExpression implements RegularExpression {
     }
 
     @Override
-    public InputMatcher<Matcher> matcher(final CharSequence input) {
+    public InputMatcher matcher(final CharSequence input) {
         checkNotNull(input, "input == null");
 
         final byte[] bytes = input.toString().getBytes(StandardCharsets.UTF_8);
         final int end = bytes.length;
 
-        return new InputMatcher<Matcher>() {
+        return new InputMatcher() {
             
             private Matcher matcher = pattern.matcher(bytes);
             private int start = 0;
@@ -93,12 +90,12 @@ public final class JoniRegularExpression implements RegularExpression {
             }
 
             @Override
-            public int _start(final int index) {
+            public int startImpl(final int index) {
                 return matcher.getEagerRegion().beg[index];
             }
 
             @Override
-            public int _start() {
+            public int startImpl() {
                 return matcher.getBegin();
             }
 
@@ -108,7 +105,7 @@ public final class JoniRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean _matches() {
+            public boolean matchesImpl() {
                 return matcher.match(0, end, Option.DEFAULT) != -1;
             }
 
@@ -121,7 +118,7 @@ public final class JoniRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String _group(final int index) {
+            public String groupImpl(final int index) {
                 try {
                     return input.subSequence(matcher.getEagerRegion().beg[index], matcher.getEagerRegion().end[index]).toString();
                 } catch (final StringIndexOutOfBoundsException e) {
@@ -130,7 +127,7 @@ public final class JoniRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String _group() {
+            public String groupImpl() {
                 try {
                     return input.subSequence(matcher.getEagerRegion().beg[0], matcher.getEagerRegion().end[0]).toString();
                 } catch (final StringIndexOutOfBoundsException e) {
@@ -139,35 +136,30 @@ public final class JoniRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean _find() {
+            public boolean findImpl() {
                 final int findIndex = matcher.search(start, end, Option.DEFAULT);
                 start = matcher.getEnd();
                 return findIndex != -1;
             }
 
             @Override
-            public int _end(final int index) {
+            public int endImpl(final int index) {
                 return matcher.getEagerRegion().end[index];
             }
 
             @Override
-            public int _end() {
+            public int endImpl() {
                 return matcher.getEnd();
             }
 
             @Override
-            public void _reset() {
+            public void resetImpl() {
                 start = 0;
                 matcher = pattern.matcher(bytes);
             }
 
             @Override
-            public Matcher delegate() {
-                return matcher;
-            }
-
-            @Override
-            public boolean _lookingAt() {
+            public boolean lookingAtImpl() {
                 throw new UnsupportedOperationException();
             }
         };
@@ -189,7 +181,7 @@ public final class JoniRegularExpression implements RegularExpression {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this).add("pattern()", Str.truncate(pattern(), 200, "...")).add("flags()", flags()).toString();
+        return this.getClass().getSimpleName() + "pattern: [" + pattern() + "] flags: [" + flags() + "]";
     }
 
 }

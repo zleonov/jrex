@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.AfterAll;
@@ -51,7 +50,7 @@ class ModeTest {
     @Test
     public void testCase() throws Throwable {
         JDKRegularExpression p;
-        InputMatcher<Matcher> m;
+        InputMatcher m;
 
         p = JDKRegularExpression.compile("([a-z]+)[0-9]+");
         m = p.matcher("cAT123#dog345");
@@ -79,7 +78,7 @@ class ModeTest {
     @Test
     public void testMultiline() throws Throwable {
         JDKRegularExpression p;
-        InputMatcher<Matcher> m;
+        InputMatcher m;
 
         p = JDKRegularExpression.compile("^foo");
         m = p.matcher("foobar");

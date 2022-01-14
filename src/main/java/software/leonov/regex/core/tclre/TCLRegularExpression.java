@@ -10,9 +10,7 @@ import com.basistech.tclre.PatternFlags;
 import com.basistech.tclre.ReMatcher;
 import com.basistech.tclre.RePattern;
 import com.basistech.tclre.RegexException;
-import com.google.common.base.MoreObjects;
 
-import software.leonov.common.base.Str;
 import software.leonov.regex.core.InputMatcher;
 import software.leonov.regex.core.RegularExpression;
 
@@ -21,9 +19,8 @@ import software.leonov.regex.core.RegularExpression;
  * <a href="https://github.com/basis-technology-corp/tcl-regex-java" target="_blank">Java port of the TCL Regular
  * Expression (TCLRE) library</a>.
  * <p>
- * See
- * <a href="http://www.basistech.com/a-better-pure-java-regex-engine" target="_blank">http://www.basistech.com/a-better-
- * pure-java-regex-engine</a> and
+ * See <a href="https://www.rosette.com/blog/a-better-pure-java-regex-engine/" target="_blank">A Better Pure Java RegEx
+ * Engine</a> and
  * <a href="http://www.regular-expressions.info/tcl.html" target="_blank">http://www.regular-expressions.info/tcl.html
  * </a> for more information.
  * 
@@ -76,7 +73,7 @@ public final class TCLRegularExpression implements RegularExpression {
     }
 
     @Override
-    public InputMatcher<ReMatcher> matcher(final CharSequence input) {
+    public InputMatcher matcher(final CharSequence input) {
         return matcher(input, NO_EXEC_FLAGS);
     }
 
@@ -92,13 +89,13 @@ public final class TCLRegularExpression implements RegularExpression {
      *              </ul>
      * @return a {@code InputMatcher} object that will match the given string against this regular-expression
      */
-    public InputMatcher<ReMatcher> matcher(final CharSequence input, final ExecFlags... flags) {
+    public InputMatcher matcher(final CharSequence input, final ExecFlags... flags) {
         checkNotNull(input, "input == null");
         checkNotNull(flags, "flags == null");
 
         final ReMatcher matcher = pattern.matcher(input, flags);
 
-        return new InputMatcher<ReMatcher>() {
+        return new InputMatcher() {
 
             @Override
             protected CharSequence getInput() {
@@ -106,12 +103,12 @@ public final class TCLRegularExpression implements RegularExpression {
             }
 
             @Override
-            public int _start(final int index) {
+            public int startImpl(final int index) {
                 return matcher.start(index);
             }
 
             @Override
-            public int _start() {
+            public int startImpl() {
                 return matcher.start();
             }
 
@@ -121,7 +118,7 @@ public final class TCLRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean _matches() {
+            public boolean matchesImpl() {
                 return matcher.matches();
             }
 
@@ -131,42 +128,37 @@ public final class TCLRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String _group(final int index) {
+            public String groupImpl(final int index) {
                 return matcher.group(index);
             }
 
             @Override
-            public String _group() {
+            public String groupImpl() {
                 return matcher.group();
             }
 
             @Override
-            public boolean _find() {
+            public boolean findImpl() {
                 return matcher.find();
             }
 
             @Override
-            public int _end(final int index) {
+            public int endImpl(final int index) {
                 return matcher.end(index);
             }
 
             @Override
-            public int _end() {
+            public int endImpl() {
                 return matcher.end();
             }
 
             @Override
-            public void _reset() {
+            public void resetImpl() {
                 matcher.reset();
             }
 
             @Override
-            public ReMatcher delegate() {
-                return matcher;
-            }
-
-            @Override
-            public boolean _lookingAt() {
+            public boolean lookingAtImpl() {
                 return matcher.lookingAt();
             }
         };
@@ -190,7 +182,7 @@ public final class TCLRegularExpression implements RegularExpression {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this).add("pattern()", Str.truncate(pattern(), 200, "...")).add("flags()", flags()).toString();
+        return this.getClass().getSimpleName() + "pattern: [" + pattern() + "] flags: [" + flags() + "]";
     }
 
 }

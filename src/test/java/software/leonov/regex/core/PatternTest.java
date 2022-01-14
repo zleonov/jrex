@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -177,7 +176,7 @@ class PatternTest {
         String baseString;
         String testString;
         JDKRegularExpression pat;
-        InputMatcher<Matcher> mat;
+        InputMatcher mat;
 
         baseString = "((?i)|b)a";
         testString = "A";
@@ -416,7 +415,7 @@ class PatternTest {
     public void testQuantComposition() throws Throwable {
         String pattern = "(a{1,3})aab";
         JDKRegularExpression pat = JDKRegularExpression.compile(pattern);
-        InputMatcher<Matcher> mat = pat.matcher("aaab");
+        InputMatcher mat = pat.matcher("aaab");
         mat.matches();
         mat.start(1);
         mat.group(1);
@@ -441,7 +440,7 @@ class PatternTest {
     @Test
     public void testTimeZoneIssue() throws Throwable {
         JDKRegularExpression p = JDKRegularExpression.compile("GMT(\\+|\\-)(\\d+)(:(\\d+))?");
-        InputMatcher<Matcher> m = p.matcher("GMT-9:45");
+        InputMatcher m = p.matcher("GMT-9:45");
         assertTrue(m.matches());
         assertEquals("-", m.group(1));
         assertEquals("9", m.group(2));
@@ -500,7 +499,7 @@ class PatternTest {
     @Test
     public void testEscapes() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile("\\Q{]()*?");
-        InputMatcher<Matcher> mat = pat.matcher("{]()*?");
+        InputMatcher mat = pat.matcher("{]()*?");
 
         assertTrue(mat.matches());
     }
@@ -585,7 +584,7 @@ class PatternTest {
     @Test
     public void testFindBoundaryCases1() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile(".*\n");
-        InputMatcher<Matcher> mat = pat.matcher("a\n");
+        InputMatcher mat = pat.matcher("a\n");
 
         mat.find();
         assertEquals("a\n", mat.group());
@@ -595,7 +594,7 @@ class PatternTest {
     @Test
     public void testFindBoundaryCases2() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile(".*A");
-        InputMatcher<Matcher> mat = pat.matcher("aAa");
+        InputMatcher mat = pat.matcher("aAa");
 
         mat.find();
         assertEquals("aA", mat.group());
@@ -605,7 +604,7 @@ class PatternTest {
     @Test
     public void testFindBoundaryCases3() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile(".*A");
-        InputMatcher<Matcher> mat = pat.matcher("a\naA\n");
+        InputMatcher mat = pat.matcher("a\naA\n");
 
         mat.find();
         assertEquals("aA", mat.group());
@@ -615,7 +614,7 @@ class PatternTest {
     @Test
     public void testFindBoundaryCases4() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile("A.*");
-        InputMatcher<Matcher> mat = pat.matcher("A\n");
+        InputMatcher mat = pat.matcher("A\n");
 
         mat.find();
         assertEquals("A", mat.group());
@@ -625,7 +624,7 @@ class PatternTest {
     @Test
     public void testFindBoundaryCases5() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile(".*A.*");
-        InputMatcher<Matcher> mat = pat.matcher("\nA\naaa\nA\naaAaa\naaaA\n");
+        InputMatcher mat = pat.matcher("\nA\naaa\nA\naaAaa\naaaA\n");
         // StringMatcher<Matcher> mat = pat.matcher("\nA\n");
         String[] res = { "A", "A", "aaAaa", "aaaA" };
         int k = 0;
@@ -638,7 +637,7 @@ class PatternTest {
     public void testFindBoundaryCases6() throws Throwable {
         String[] res = { "", "a", "", "" };
         JDKRegularExpression pat = JDKRegularExpression.compile(".*");
-        InputMatcher<Matcher> mat = pat.matcher("\na\n");
+        InputMatcher mat = pat.matcher("\na\n");
         int k = 0;
 
         for (; mat.find(); k++) {
@@ -660,7 +659,7 @@ class PatternTest {
     @Test
     public void testBackReferences() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile("(\\((\\w*):(.*):(\\2)\\))");
-        InputMatcher<Matcher> mat = pat.matcher("(start1: word :start1)(start2: word :start2)");
+        InputMatcher mat = pat.matcher("(start1: word :start1)(start2: word :start2)");
         int k = 1;
         for (; mat.find(); k++) {
             assertEquals("start" + k, mat.group(2));
@@ -677,7 +676,7 @@ class PatternTest {
 
     public void _testBackReferences1() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile("(\\((\\w*):(.*):(\\2)\\))");
-        InputMatcher<Matcher> mat = pat.matcher("(start1: word :start1)(start2: word :start2)");
+        InputMatcher mat = pat.matcher("(start1: word :start1)(start2: word :start2)");
         int k = 1;
         for (; mat.find(); k++) {
             System.out.println(mat.group(2));
@@ -692,7 +691,7 @@ class PatternTest {
     @Test
     public void testNewLine() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile("(^$)*\n", Pattern.MULTILINE);
-        InputMatcher<Matcher> mat = pat.matcher("\r\n\n");
+        InputMatcher mat = pat.matcher("\r\n\n");
         int counter = 0;
         while (mat.find()) {
             counter++;
@@ -703,7 +702,7 @@ class PatternTest {
     @Test
     public void testFindGreedy() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile(".*aaa", Pattern.DOTALL);
-        InputMatcher<Matcher> mat = pat.matcher("aaaa\naaa\naaaaaa");
+        InputMatcher mat = pat.matcher("aaaa\naaa\naaaaaa");
         mat.matches();
         assertEquals(15, mat.end());
     }
@@ -724,7 +723,7 @@ class PatternTest {
     @Test
     public void testSOLQuant() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile("$*", Pattern.MULTILINE);
-        InputMatcher<Matcher> mat = pat.matcher("\n\n");
+        InputMatcher mat = pat.matcher("\n\n");
         int counter = 0;
         while (mat.find()) {
             counter++;
@@ -762,7 +761,7 @@ class PatternTest {
         pat = JDKRegularExpression
                 // 1 2 3 4 5 6 7 8 9 10 11
                 .compile("(?:-|(-?\\d+\\d\\d\\d))?(?:-|-(\\d\\d))?(?:-|-(\\d\\d))?(T)?(?:(\\d\\d):(\\d\\d):(\\d\\d)(\\.\\d+)?)?(?:(?:((?:\\+|\\-)\\d\\d):(\\d\\d))|(Z))?");
-        InputMatcher<Matcher> mat = pat.matcher("-1234-21-31T41:51:61.789+71:81");
+        InputMatcher mat = pat.matcher("-1234-21-31T41:51:61.789+71:81");
         assertTrue(mat.matches());
         assertEquals("-1234", mat.group(1));
         assertEquals("21", mat.group(2));
@@ -835,7 +834,7 @@ class PatternTest {
     @Test
     public void testCompileJDKRegularExpressionWithTerminatorMark() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile("a\u0000\u0000cd");
-        InputMatcher<Matcher> mat = pat.matcher("a\u0000\u0000cd");
+        InputMatcher mat = pat.matcher("a\u0000\u0000cd");
         assertTrue(mat.matches());
     }
 
@@ -843,7 +842,7 @@ class PatternTest {
     public void testAlternations() throws Throwable {
         String baseString = "|a|bc";
         JDKRegularExpression pat = JDKRegularExpression.compile(baseString);
-        InputMatcher<Matcher> mat = pat.matcher("");
+        InputMatcher mat = pat.matcher("");
 
         assertTrue(mat.matches());
 
@@ -943,7 +942,7 @@ class PatternTest {
     @Test
     public void testEmptyGroups() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile("ab(?>)cda");
-        InputMatcher<Matcher> mat = pat.matcher("abcda");
+        InputMatcher mat = pat.matcher("abcda");
         assertTrue(mat.matches());
 
         pat = JDKRegularExpression.compile("ab()");
@@ -976,7 +975,7 @@ class PatternTest {
         String baseString = "(?i)((?s)a)";
         String testString = "A";
         JDKRegularExpression pat = JDKRegularExpression.compile(baseString);
-        InputMatcher<Matcher> mat = pat.matcher(testString);
+        InputMatcher mat = pat.matcher(testString);
         assertTrue(mat.matches());
 
         baseString = "(?x)(?i)(?s)(?d)a";
@@ -1014,7 +1013,7 @@ class PatternTest {
         String baseString = "abc((?x)d)   a";
         String testString = "abcd   a";
         JDKRegularExpression pat = JDKRegularExpression.compile(baseString);
-        InputMatcher<Matcher> mat = pat.matcher(testString);
+        InputMatcher mat = pat.matcher(testString);
 
         assertTrue(mat.matches());
     }
@@ -1080,7 +1079,7 @@ class PatternTest {
         String patString = "abcd\uD8D3";
         String testString = "abcd\uD8D3\uDFFC";
         JDKRegularExpression pat = JDKRegularExpression.compile(patString);
-        InputMatcher<Matcher> mat = pat.matcher(testString);
+        InputMatcher mat = pat.matcher(testString);
         assertFalse(mat.find());
 
         testString = "abcd\uD8D3abc";
@@ -1115,7 +1114,7 @@ class PatternTest {
         String patString = ".";
         String testString = "\uD9A0\uDE81";
         JDKRegularExpression pat = JDKRegularExpression.compile(patString);
-        InputMatcher<Matcher> mat = pat.matcher(testString);
+        InputMatcher mat = pat.matcher(testString);
         assertTrue(mat.matches());
 
         testString = "\uDE81";
@@ -1152,7 +1151,7 @@ class PatternTest {
         String patString = "\uD9A0\uDE81*abc";
         String testString = "\uD9A0\uDE81\uD9A0\uDE81abc";
         JDKRegularExpression pat = JDKRegularExpression.compile(patString);
-        InputMatcher<Matcher> mat = pat.matcher(testString);
+        InputMatcher mat = pat.matcher(testString);
         assertTrue(mat.matches());
 
         testString = "abc";
@@ -1165,7 +1164,7 @@ class PatternTest {
         String patString = "\uDE81|\uD9A0\uDE81|\uD9A0";
         String testString = "\uD9A0";
         JDKRegularExpression pat = JDKRegularExpression.compile(patString);
-        InputMatcher<Matcher> mat = pat.matcher(testString);
+        InputMatcher mat = pat.matcher(testString);
         assertTrue(mat.matches());
 
         testString = "\uDE81";
@@ -1188,7 +1187,7 @@ class PatternTest {
         String patString = "(\uD9A0)\uDE81";
         String testString = "\uD9A0\uDE81";
         JDKRegularExpression pat = JDKRegularExpression.compile(patString);
-        InputMatcher<Matcher> mat = pat.matcher(testString);
+        InputMatcher mat = pat.matcher(testString);
         assertFalse(mat.matches());
 
         patString = "(\uD9A0)";
@@ -1204,7 +1203,7 @@ class PatternTest {
     @Test
     public void testUnicodeCategoryWithSurrogatesSupplementary() throws Throwable {
         JDKRegularExpression p = JDKRegularExpression.compile("\\p{javaLowerCase}");
-        InputMatcher<Matcher> matcher = p.matcher("\uD801\uDC28");
+        InputMatcher matcher = p.matcher("\uD801\uDC28");
         assertTrue(matcher.find());
     }
 }

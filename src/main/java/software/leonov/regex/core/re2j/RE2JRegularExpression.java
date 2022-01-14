@@ -1,13 +1,10 @@
 package software.leonov.regex.core.re2j;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-
-import com.google.common.base.MoreObjects;
 import com.google.re2j.Matcher;
 import com.google.re2j.Pattern;
 import com.google.re2j.PatternSyntaxException;
 
-import software.leonov.common.base.Str;
 import software.leonov.regex.core.InputMatcher;
 import software.leonov.regex.core.RegularExpression;
 
@@ -58,12 +55,12 @@ public final class RE2JRegularExpression implements RegularExpression {
     }
 
     @Override
-    public InputMatcher<Matcher> matcher(final CharSequence input) {
+    public InputMatcher matcher(final CharSequence input) {
         checkNotNull(input, "input == null");
 
         final Matcher matcher = pattern.matcher(input);
 
-        return new InputMatcher<Matcher>() {
+        return new InputMatcher() {
 
             @Override
             protected CharSequence getInput() {
@@ -71,12 +68,12 @@ public final class RE2JRegularExpression implements RegularExpression {
             }
 
             @Override
-            public int _start(final int index) {
+            public int startImpl(final int index) {
                 return matcher.start(index);
             }
 
             @Override
-            public int _start() {
+            public int startImpl() {
                 return matcher.start();
             }
 
@@ -86,7 +83,7 @@ public final class RE2JRegularExpression implements RegularExpression {
             }
 
             @Override
-            public boolean _matches() {
+            public boolean matchesImpl() {
                 return matcher.matches();
             }
 
@@ -96,42 +93,37 @@ public final class RE2JRegularExpression implements RegularExpression {
             }
 
             @Override
-            public String _group(final int index) {
+            public String groupImpl(final int index) {
                 return matcher.group(index);
             }
 
             @Override
-            public String _group() {
+            public String groupImpl() {
                 return matcher.group();
             }
 
             @Override
-            public boolean _find() {
+            public boolean findImpl() {
                 return matcher.find();
             }
 
             @Override
-            public int _end(final int index) {
+            public int endImpl(final int index) {
                 return matcher.end(index);
             }
 
             @Override
-            public int _end() {
+            public int endImpl() {
                 return matcher.end();
             }
 
             @Override
-            public void _reset() {
+            public void resetImpl() {
                 matcher.reset();
             }
 
             @Override
-            public Matcher delegate() {
-                return matcher;
-            }
-
-            @Override
-            public boolean _lookingAt() {
+            public boolean lookingAtImpl() {
                 return matcher.lookingAt();
             }
         };
@@ -153,7 +145,7 @@ public final class RE2JRegularExpression implements RegularExpression {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this).add("pattern()", Str.truncate(pattern(), 200, "...")).add("flags()", flags()).toString();
+        return this.getClass().getSimpleName() + "pattern: [" + pattern() + "] flags: [" + flags() + "]";
     }
 
 }

@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.AfterAll;
@@ -106,7 +105,7 @@ class MatcherTest {
     @Test
     public void testAppendReplacement() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile("XX");
-        InputMatcher<Matcher> m = pat.matcher("Today is XX-XX-XX ...");
+        InputMatcher m = pat.matcher("Today is XX-XX-XX ...");
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; m.find(); i++) {
@@ -119,7 +118,7 @@ class MatcherTest {
     @Test
     public void testAppendReplacementRef() throws Throwable {
         JDKRegularExpression p = JDKRegularExpression.compile("xx (rur|\\$)");
-        InputMatcher<Matcher> m = p.matcher("xx $ equals to xx rur.");
+        InputMatcher m = p.matcher("xx $ equals to xx rur.");
         StringBuilder sb = new StringBuilder();
         for (int i = 1; m.find(); i *= 30) {
             String rep = new Integer(i).toString() + " $1";
@@ -134,7 +133,7 @@ class MatcherTest {
         String input = "aabfooaabfooabfoob";
         String pattern = "a*b";
         JDKRegularExpression pat = JDKRegularExpression.compile(pattern);
-        InputMatcher<Matcher> mat = pat.matcher(input);
+        InputMatcher mat = pat.matcher(input);
 
         assertEquals("-foo-foo-foo-", mat.replaceAll("-"));
     }
@@ -159,7 +158,7 @@ class MatcherTest {
     @Test
     public void testAppendSlashes() throws Throwable {
         JDKRegularExpression p = JDKRegularExpression.compile("\\\\");
-        InputMatcher<Matcher> m = p.matcher("one\\cat\\two\\cats\\in\\the\\yard");
+        InputMatcher m = p.matcher("one\\cat\\two\\cats\\in\\the\\yard");
         StringBuilder sb = new StringBuilder();
         while (m.find()) {
             m.appendReplacement(sb, "\\\\");
@@ -174,7 +173,7 @@ class MatcherTest {
         String input = "zzzdogzzzdogzzz";
         String pattern = "dog";
         JDKRegularExpression pat = JDKRegularExpression.compile(pattern);
-        InputMatcher<Matcher> mat = pat.matcher(input);
+        InputMatcher mat = pat.matcher(input);
 
         assertEquals("zzzcatzzzdogzzz", mat.replaceFirst("cat"));
     }
@@ -209,7 +208,7 @@ class MatcherTest {
         // //
         for (int i = 0; i < groupPatterns.length; i++) {
             JDKRegularExpression test = JDKRegularExpression.compile(groupPatterns[i]);
-            InputMatcher<Matcher> mat = test.matcher(positiveTestString);
+            InputMatcher mat = test.matcher(positiveTestString);
             mat.matches();
             try {
                 // groupPattern <index + 1> equals to number of groups
@@ -231,7 +230,7 @@ class MatcherTest {
 
         for (int i = 0; i < groupPatterns.length; i++) {
             JDKRegularExpression test = JDKRegularExpression.compile(groupPatterns[i]);
-            InputMatcher<Matcher> mat = test.matcher(positiveTestString);
+            InputMatcher mat = test.matcher(positiveTestString);
             mat.matches();
             for (int j = 0; j < groupResults[i].length; j++) {
                 assertEquals(groupResults[i][j], mat.group(j + 1), "i: " + i + " j: " + j);
@@ -247,7 +246,7 @@ class MatcherTest {
         String negativeTestString = "gjhfgdsjfhgcbv";
         for (String element : groupPatterns) {
             JDKRegularExpression test = JDKRegularExpression.compile(element);
-            InputMatcher<Matcher> mat = test.matcher(positiveTestString);
+            InputMatcher mat = test.matcher(positiveTestString);
             mat.matches();
             // test result
             assertEquals(positiveTestString, mat.group());
@@ -258,7 +257,7 @@ class MatcherTest {
 
         for (String element : groupPatterns) {
             JDKRegularExpression test = JDKRegularExpression.compile(element);
-            InputMatcher<Matcher> mat = test.matcher(negativeTestString);
+            InputMatcher mat = test.matcher(negativeTestString);
             mat.matches();
             try {
                 mat.group();
@@ -271,7 +270,7 @@ class MatcherTest {
     @Test
     public void testGroupPossessive() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile("((a)|(b))++c");
-        InputMatcher<Matcher> mat = pat.matcher("aac");
+        InputMatcher mat = pat.matcher("aac");
 
         mat.matches();
         assertEquals("a", mat.group(1));
@@ -310,7 +309,7 @@ class MatcherTest {
         for (int i = 0; i < testPatterns.length; i++) {
             JDKRegularExpression pat = JDKRegularExpression.compile(testPatterns[i]);
             for (int j = 0; j < posSeq[i].length; j++) {
-                InputMatcher<Matcher> mat = pat.matcher(posSeq[i][j]);
+                InputMatcher mat = pat.matcher(posSeq[i][j]);
                 assertTrue(mat.matches(), "Incorrect match: " + testPatterns[i] + " vs " + posSeq[i][j]);
             }
         }
@@ -350,7 +349,7 @@ class MatcherTest {
         String testString = "dacaacaacaaddaaacaacaaddd";
 
         JDKRegularExpression pat = JDKRegularExpression.compile(patternString);
-        InputMatcher<Matcher> mat = pat.matcher(testString);
+        InputMatcher mat = pat.matcher(testString);
 
         mat.matches();
         assertEquals("dacaacaacaaddaaacaacaaddd", mat.group());
@@ -373,7 +372,7 @@ class MatcherTest {
         String testPattern = "(abb)";
         String testString = "cccabbabbabbabbabb";
         JDKRegularExpression pat = JDKRegularExpression.compile(testPattern);
-        InputMatcher<Matcher> mat = pat.matcher(testString);
+        InputMatcher mat = pat.matcher(testString);
         int start = 3;
         int end = 6;
         while (mat.find()) {
@@ -388,7 +387,7 @@ class MatcherTest {
         testString = "aaaa123456789045";
 
         JDKRegularExpression pat2 = JDKRegularExpression.compile(testPattern);
-        InputMatcher<Matcher> mat2 = pat2.matcher(testString);
+        InputMatcher mat2 = pat2.matcher(testString);
         start = 4;
         int length = 3;
         while (mat2.find()) {
@@ -400,7 +399,7 @@ class MatcherTest {
     @Test
     public void testSEOLsymbols() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile("^a\\(bb\\[$");
-        InputMatcher<Matcher> mat = pat.matcher("a(bb[");
+        InputMatcher mat = pat.matcher("a(bb[");
 
         assertTrue(mat.matches());
     }
@@ -416,7 +415,7 @@ class MatcherTest {
     public void testGroupCount() throws Throwable {
         for (int i = 0; i < groupPatterns.length; i++) {
             JDKRegularExpression test = JDKRegularExpression.compile(groupPatterns[i]);
-            InputMatcher<Matcher> mat = test.matcher("ababababbaaabb");
+            InputMatcher mat = test.matcher("ababababbaaabb");
             mat.matches();
             assertEquals(i + 1, mat.groupCount());
 
@@ -426,7 +425,7 @@ class MatcherTest {
     @Test
     public void testRelactantQuantifiers() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile("(ab*)*b");
-        InputMatcher<Matcher> mat = pat.matcher("abbbb");
+        InputMatcher mat = pat.matcher("abbbb");
 
         if (mat.matches()) {
             assertEquals("abbb", mat.group(1));
@@ -440,7 +439,7 @@ class MatcherTest {
         String input = "foob";
         String pattern = "a*b";
         JDKRegularExpression pat = JDKRegularExpression.compile(pattern);
-        InputMatcher<Matcher> mat = pat.matcher(input);
+        InputMatcher mat = pat.matcher(input);
 
         mat.find();
         assertEquals("b", mat.group());
@@ -453,7 +452,7 @@ class MatcherTest {
         JDKRegularExpression posPat = JDKRegularExpression.compile("(aa|bb){1,3}+cc");
         JDKRegularExpression negPat = JDKRegularExpression.compile("(aa|bb){1,3}+bb");
 
-        InputMatcher<Matcher> mat;
+        InputMatcher mat;
         for (String element : posExamples) {
             mat = posPat.matcher(element);
             assertTrue(mat.matches());
@@ -475,7 +474,7 @@ class MatcherTest {
         JDKRegularExpression posPat = JDKRegularExpression.compile("(aa|bb)?+cc");
         JDKRegularExpression negPat = JDKRegularExpression.compile("(aa|bb)?+bb");
 
-        InputMatcher<Matcher> mat;
+        InputMatcher mat;
         for (String element : posExamples) {
             mat = posPat.matcher(element);
             assertTrue(mat.matches(), posPat.toString() + " vs: " + element);
@@ -492,7 +491,7 @@ class MatcherTest {
     @Test
     public void testRelCompGroup() throws Throwable {
 
-        InputMatcher<Matcher> mat;
+        InputMatcher mat;
         JDKRegularExpression pat;
         String res = "";
         for (int i = 0; i < 4; i++) {
@@ -507,7 +506,7 @@ class MatcherTest {
     @Test
     public void testRelAltGroup() throws Throwable {
 
-        InputMatcher<Matcher> mat;
+        InputMatcher mat;
         JDKRegularExpression pat;
 
         pat = JDKRegularExpression.compile("((aa|bb)??).*cc");
@@ -524,7 +523,7 @@ class MatcherTest {
     @Test
     public void testIgnoreCase() throws Throwable {
         JDKRegularExpression pat = JDKRegularExpression.compile("(aa|bb)*", Pattern.CASE_INSENSITIVE);
-        InputMatcher<Matcher> mat = pat.matcher("aAbb");
+        InputMatcher mat = pat.matcher("aAbb");
 
         assertTrue(mat.matches());
 
@@ -545,7 +544,7 @@ class MatcherTest {
     @Test
     public void testOverFlow() throws Throwable {
         JDKRegularExpression tp = JDKRegularExpression.compile("(a*)*");
-        InputMatcher<Matcher> tm = tp.matcher("aaa");
+        InputMatcher tm = tp.matcher("aaa");
         assertTrue(tm.matches());
         assertEquals("", tm.group(1));
 
@@ -553,7 +552,7 @@ class MatcherTest {
         assertTrue(JDKRegularExpression.compile("(1+)(2*)\\2+").matcher("11").matches());
 
         JDKRegularExpression pat = JDKRegularExpression.compile("(1+)\\1*");
-        InputMatcher<Matcher> mat = pat.matcher("11");
+        InputMatcher mat = pat.matcher("11");
 
         assertTrue(mat.matches());
         assertEquals("11", mat.group(1));
@@ -619,7 +618,7 @@ class MatcherTest {
 
     @Test
     public void testFindDollar() throws Throwable {
-        InputMatcher<Matcher> mat = JDKRegularExpression.compile("a$").matcher("a\n");
+        InputMatcher mat = JDKRegularExpression.compile("a$").matcher("a\n");
         assertTrue(mat.find());
         assertEquals("a", mat.group());
     }
@@ -756,7 +755,7 @@ class MatcherTest {
     public void test3360() throws Throwable {
         String str = "!\"#%&'(),-./";
         JDKRegularExpression p = JDKRegularExpression.compile("\\s");
-        InputMatcher<Matcher> m = p.matcher(str);
+        InputMatcher m = p.matcher(str);
 
         assertFalse(m.find());
     }
@@ -771,7 +770,7 @@ class MatcherTest {
 
         for (int i = 0; i < s.length; i++) {
             JDKRegularExpression pattern = JDKRegularExpression.compile(regexp);
-            InputMatcher<Matcher> matcher = pattern.matcher(s[i]);
+            InputMatcher matcher = pattern.matcher(s[i]);
             assertTrue(matcher.find());
         }
     }
@@ -835,7 +834,7 @@ class MatcherTest {
     @Test
     public void test_toString() throws Throwable {
         JDKRegularExpression p = JDKRegularExpression.compile("foo");
-        InputMatcher<Matcher> m = p.matcher("bar");
+        InputMatcher m = p.matcher("bar");
         assertNotNull(m.toString());
     }
 
@@ -843,7 +842,7 @@ class MatcherTest {
     public void testErrorConditions() throws Throwable {
         // Test match cursors in absence of a match
         JDKRegularExpression p = JDKRegularExpression.compile("foo");
-        InputMatcher<Matcher> m = p.matcher("bar");
+        InputMatcher m = p.matcher("bar");
         assertFalse(m.matches());
 
         try {
@@ -895,7 +894,7 @@ class MatcherTest {
     public void testErrorConditions2() throws Throwable {
         // Test match cursors in absence of a match
         JDKRegularExpression p = JDKRegularExpression.compile("(foo[0-9])(bar[a-z])");
-        InputMatcher<Matcher> m = p.matcher("foo1barzfoo2baryfoozbar5");
+        InputMatcher m = p.matcher("foo1barzfoo2baryfoozbar5");
 
         assertTrue(m.find());
         assertEquals(0, m.start());
@@ -925,20 +924,20 @@ class MatcherTest {
 
         try {
             m.start(-1);
-            fail("IllegalArgumentException expected");
-        } catch (IllegalArgumentException e) {
+            fail("IndexOutOfBoundsException expected");
+        } catch (IndexOutOfBoundsException e) {
         }
 
         try {
             m.end(-1);
-            fail("IllegalArgumentException expected");
-        } catch (IllegalArgumentException e) {
+            fail("IndexOutOfBoundsException expected");
+        } catch (IndexOutOfBoundsException e) {
         }
 
         try {
             m.group(-1);
-            fail("IllegalArgumentException expected");
-        } catch (IllegalArgumentException e) {
+            fail("IndexOutOfBoundsException expected");
+        } catch (IndexOutOfBoundsException e) {
         }
 
         assertTrue(m.find());
@@ -969,20 +968,20 @@ class MatcherTest {
 
         try {
             m.start(-1);
-            fail("IllegalArgumentException expected");
-        } catch (IllegalArgumentException e) {
+            fail("IndexOutOfBoundsException expected");
+        } catch (IndexOutOfBoundsException e) {
         }
 
         try {
             m.end(-1);
-            fail("IllegalArgumentException expected");
-        } catch (IllegalArgumentException e) {
+            fail("IndexOutOfBoundsException expected");
+        } catch (IndexOutOfBoundsException e) {
         }
 
         try {
             m.group(-1);
-            fail("IllegalArgumentException expected");
-        } catch (IllegalArgumentException e) {
+            fail("IndexOutOfBoundsException expected");
+        } catch (IndexOutOfBoundsException e) {
         }
 
         assertFalse(m.find());
@@ -1033,7 +1032,7 @@ class MatcherTest {
         String replacedString = "me";
         String substitutionString = "\\";
         JDKRegularExpression pat = JDKRegularExpression.compile(replacedString);
-        InputMatcher<Matcher> mat = pat.matcher(str);
+        InputMatcher mat = pat.matcher(str);
         try {
             mat.replaceAll(substitutionString);
             fail("IndexOutOfBoundsException should be thrown");
